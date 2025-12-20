@@ -144,27 +144,53 @@
     return "lower";
   }
 
-  function applyCapsStyle(word, style) {
-    if (style === "upper") return word.toUpperCase();
-    if (style === "title") return word[0].toUpperCase() + word.slice(1).toLowerCase();
-    return word.toLowerCase();
-  }
-
   function encodeWord(word, suffix, preserveCaps) {
     const style = preserveCaps ? detectCapsStyle(word) : "lower";
     const w = word.toLowerCase();
     if (w.length < 1) return word;
-    const coded = w.slice(1) + w[0] + suffix;
-    return preserveCaps ? applyCapsStyle(coded, style) : coded;
+
+    let coded = w.slice(1) + w[0] + suffix;
+
+    if (!preserveCaps) return coded;
+
+    // Preserve ALL-CAPS words (USA -> SAUz)
+    if (style === "upper") return coded.toUpperCase();
+
+    // Preserve Title Case by keeping the ORIGINAL first letter capital,
+    // even though it moved to the end (before suffix).
+    if (style === "title") {
+      const movedLetterIndex = coded.length - 1 - suffix.length; // position of moved first letter
+      coded =
+        coded.slice(0, movedLetterIndex) +
+        coded[movedLetterIndex].toUpperCase() +
+        coded.slice(movedLetterIndex + 1);
+      return coded;
+    }
+
+    // lower
+    return coded;
   }
 
   function decodeWord(word, suffix, preserveCaps) {
     const style = preserveCaps ? detectCapsStyle(word) : "lower";
     const w = word.toLowerCase();
     if (!w.endsWith(suffix) || w.length < 2) return word;
+
     const core = w.slice(0, -1);
-    const plain = core.slice(-1) + core.slice(0, -1);
-    return preserveCaps ? applyCapsStyle(plain, style) : plain;
+    let plain = core.slice(-1) + core.slice(0, -1);
+
+    if (!preserveCaps) return plain;
+
+    // Preserve ALL-CAPS words
+    if (style === "upper") return plain.toUpperCase();
+
+    // Preserve Title Case by capitalizing the restored first letter
+    if (style === "title") {
+      plain = plain[0].toUpperCase() + plain.slice(1);
+      return plain;
+    }
+
+    return plain;
   }
 
   // Picks suffix per word depending on mode.
