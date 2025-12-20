@@ -125,12 +125,17 @@ const suffixModeEl = document.getElementById("suffixMode");
 const moveNEl = document.getElementById("moveN");
 const capsEl = document.getElementById("caps");
 
+/* ✅ Suffix dropdown: SH/CH/TH first, then a–z */
 (function initSuffix() {
-  for (const ch of LETTERS) {
+  const special = ["sh", "ch", "th"];
+  const all = [...special, ...LETTERS.split("")];
+
+  suffixEl.innerHTML = "";
+  for (const s of all) {
     const o = document.createElement("option");
-    o.value = ch;
-    o.textContent = ch;
-    if (ch === "a") o.selected = true;
+    o.value = s;
+    o.textContent = s.toUpperCase(); // looks nicer in the UI
+    if (s === "a") o.selected = true; // default stays "a"
     suffixEl.appendChild(o);
   }
 })();
@@ -182,9 +187,11 @@ function encodeWord(word, suffix, preserveCaps, moveN) {
 function decodeWord(word, suffix, preserveCaps, moveN) {
   const style = preserveCaps ? detectCapsStyle(word) : "lower";
   const lower = word.toLowerCase();
+
+  /* ✅ handles 1-char or 2-char suffix */
   if (!lower.endsWith(suffix)) return word;
 
-  const core = lower.slice(0, -1);
+  const core = lower.slice(0, -suffix.length);
   const { letters, apos } = splitApostrophes(core);
 
   const n = Math.min(moveN, letters.length);
@@ -204,9 +211,10 @@ function randomSuffix() {
 function getSuffixForWord(i) {
   if (suffixModeEl.value === "aeo") return ["a","e","o"][i % 3];
   if (suffixModeEl.value === "random") return randomSuffix();
-  return suffixEl.value;
+  return suffixEl.value; // single (can be sh/ch/th or a–z)
 }
 
+/* ✅ for Random decode only (still 1-letter random) */
 function lastCharSuffix(w) {
   const c = w[w.length - 1];
   return /[a-z]/i.test(c) ? c.toLowerCase() : null;
@@ -219,9 +227,22 @@ function transform(text, mode) {
 
   return tokenize(text).map(tok => {
     if (/^[A-Za-z]/.test(tok)) {
-      const suffix = mode === "decode"
-        ? lastCharSuffix(tok) || getSuffixForWord(wordIndex)
-        : getSuffixForWord(wordIndex);
+      let suffix;
+
+      if (mode === "decode") {
+        if (suffixModeEl.value === "random") {
+          // random decode: suffix is whatever last letter is
+          suffix = lastCharSuffix(tok) || "a";
+        } else if (suffixModeEl.value === "aeo") {
+          // aeo decode: suffix is based on word index
+          suffix = ["a","e","o"][wordIndex % 3];
+        } else {
+          // single decode: use selected suffix (supports SH/CH/TH)
+          suffix = suffixEl.value;
+        }
+      } else {
+        suffix = getSuffixForWord(wordIndex);
+      }
 
       wordIndex++;
       return mode === "encode"
