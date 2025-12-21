@@ -50,9 +50,7 @@
       align-items: center;
     }
 
-    button, select, input[type="checkbox"] {
-      font-size: 15px;
-    }
+    button, select, input[type="checkbox"] { font-size: 15px; }
 
     button, select {
       padding: 10px 12px;
@@ -73,11 +71,7 @@
       user-select: none;
     }
 
-    .hint {
-      opacity: 0.75;
-      font-size: 13px;
-      margin-top: 8px;
-    }
+    .hint { opacity: 0.75; font-size: 13px; margin-top: 8px; }
   </style>
 </head>
 
@@ -122,7 +116,7 @@
       </select>
     </label>
 
-    <label class="chk" title="Decode auto-detects per word">
+    <label class="chk" title="Recommended: tries both 1-letter and 2-letter moves per word and picks the most English-looking result">
       <input id="smartDecode" type="checkbox" checked />
       Smart Decode
     </label>
@@ -131,14 +125,13 @@
   <textarea id="output" readonly></textarea>
 
   <div class="hint">
-    How Fliplish works: Each word is encoded by moving the first one or two letters
-    to the end of the word and adding a suffix. Decode reverses the process while
-    preserving punctuation and spacing.
+    How Fliplish works: Each word is encoded by moving the first 1–2 letters to the end and adding a suffix letter.
+    Decode removes that suffix letter and moves letters back, preserving punctuation and spacing.
   </div>
 </div>
 
 <script>
-/* ===== Suffixes ===== */
+/* ===== Suffixes (A–Z only) ===== */
 const LETTERS = "abcdefghijklmnopqrstuvwxyz".split("");
 
 /* ===== Elements ===== */
@@ -170,23 +163,52 @@ function syncSuffixUI() {
 suffixModeEl.addEventListener("change", syncSuffixUI);
 syncSuffixUI();
 
-/* ===== Helpers ===== */
+/* ===== Tokenizer (keeps punctuation chunks) ===== */
 function tokenize(text) {
   return text.match(/[A-Za-z]+(?:['’][A-Za-z]+)*|[^A-Za-z]+/g) || [];
 }
 
+/* ===== Caps detection ===== */
 function detectCapsStyle(word) {
   if (word === word.toUpperCase()) return "upper";
-  if (word[0] === word[0].toUpperCase()) return "title";
+  if (
+    word[0] === word[0].toUpperCase() &&
+    word.slice(1) === word.slice(1).toLowerCase()
+  ) return "title";
   return "lower";
 }
 
-/* ===== Encode / Decode ===== */
+/* ===== Apostrophe-safe helpers ===== */
+function splitApostrophes(word) {
+  const letters = [];
+  const apos = [];
+  [...word].forEach((c, i) => {
+    if (c === "'" || c === "’") apos.push({ i, c });
+    else letters.push(c);
+  });
+  return { letters: letters.join(""), apos };
+}
+
+function restoreApostrophes(word, apos) {
+  const arr = [...word];
+  apos.forEach(({ i, c }) => {
+    const idx = Math.max(0, Math.min(i, arr.length));
+    arr.splice(idx, 0, c);
+  });
+  return arr.join("");
+}
+
+/* ===== Core encode/decode ===== */
 function encodeWord(word, suffix, preserveCaps, moveN) {
   const style = preserveCaps ? detectCapsStyle(word) : "lower";
   const lower = word.toLowerCase();
-  const n = Math.min(moveN, lower.length);
-  let coded = lower.slice(n) + lower.slice(0, n) + suffix;
+
+  const { letters, apos } = splitApostrophes(lower);
+  if (!letters) return word;
+
+  const n = Math.min(moveN, letters.length);
+  const codedLetters = letters.slice(n) + letters.slice(0, n) + suffix;
+  let coded = restoreApostrophes(codedLetters, apos);
 
   if (!preserveCaps) return coded;
   if (style === "upper") return coded.toUpperCase();
@@ -197,11 +219,16 @@ function encodeWord(word, suffix, preserveCaps, moveN) {
 function decodeWord(word, suffix, preserveCaps, moveN) {
   const style = preserveCaps ? detectCapsStyle(word) : "lower";
   const lower = word.toLowerCase();
-  if (!lower.endsWith(suffix)) return word;
+
+  if (!suffix || !lower.endsWith(suffix)) return word;
 
   const core = lower.slice(0, -suffix.length);
-  const n = Math.min(moveN, core.length);
-  let plain = core.slice(-n) + core.slice(0, -n);
+  const { letters, apos } = splitApostrophes(core);
+  if (!letters) return word;
+
+  const n = Math.min(moveN, letters.length);
+  const plainLetters = letters.slice(-n) + letters.slice(0, -n);
+  let plain = restoreApostrophes(plainLetters, apos);
 
   if (!preserveCaps) return plain;
   if (style === "upper") return plain.toUpperCase();
@@ -209,11 +236,68 @@ function decodeWord(word, suffix, preserveCaps, moveN) {
   return plain;
 }
 
-function getSuffixForWord(i) {
+/* ===== Encode suffix selection ===== */
+function getSuffixForEncode(i) {
   const mode = suffixModeEl.value;
   if (mode === "aeo") return ["a","e","o"][i % 3];
   if (mode === "random") return LETTERS[Math.floor(Math.random() * LETTERS.length)];
-  return suffixEl.value;
+  return suffixEl.value; // single
+}
+
+/* ===== Decode suffix extraction (A–Z final char only) ===== */
+function suffixFromToken(tok) {
+  const low = tok.toLowerCase();
+  const last = low[low.length - 1] || "";
+  return /[a-z]/.test(last) ? last : null;
+}
+
+/* ===== Smart decode scoring ===== */
+const COMMON = new Set([
+  "the","a","an","and","or","but","is","are","was","were","be","been","being",
+  "i","you","he","she","it","we","they","me","him","her","us","them",
+  "my","your","his","hers","our","their",
+  "to","of","in","on","at","for","from","with","as","by",
+  "this","that","these","those","not","no","yes",
+  "today","tomorrow","now","then","because","favorite","store","walmart"
+]);
+
+function scorePlainWord(w) {
+  const low = w.toLowerCase();
+  const lettersOnly = low.replace(/[^a-z]/g, "");
+  if (!lettersOnly.length) return -999;
+
+  let score = 0;
+
+  if (COMMON.has(lettersOnly)) score += 10;
+
+  const vowels = (lettersOnly.match(/[aeiouy]/g) || []).length;
+  score += vowels * 2;
+
+  if (/[^aeiouy]{5,}/.test(lettersOnly)) score -= 7;
+  if (/[jqxz]{2,}/.test(lettersOnly)) score -= 6;
+  if (/(.)\1\1/.test(lettersOnly)) score -= 3;
+
+  if (/(ing|ed|ly|tion|s)$/.test(lettersOnly)) score += 2;
+
+  return score;
+}
+
+function smartDecodeToken(tok, preserveCaps) {
+  const sfx = suffixFromToken(tok);
+  if (!sfx) return tok;
+
+  // Try both move sizes regardless of UI setting
+  const cand1 = decodeWord(tok, sfx, preserveCaps, 1);
+  const cand2 = decodeWord(tok, sfx, preserveCaps, 2);
+
+  const sc1 = scorePlainWord(cand1);
+  const sc2 = scorePlainWord(cand2);
+
+  if (sc2 > sc1 + 1) return cand2;
+  if (sc1 > sc2 + 1) return cand1;
+
+  // Slight bias toward 2-letter move (it tends to look more "language-ish")
+  return cand2;
 }
 
 /* ===== Transform ===== */
@@ -223,22 +307,38 @@ function transform(text, mode) {
 
   return tokenize(text).map(tok => {
     if (/^[A-Za-z]/.test(tok)) {
+      if (mode === "encode") {
+        const moveN = +moveNEl.value;
+        const suffix = getSuffixForEncode(wordIndex++);
+        return encodeWord(tok, suffix, preserveCaps, moveN);
+      }
+
+      // decode
+      const useSmart = !!smartDecodeEl.checked;
+
+      if (useSmart) {
+        wordIndex++;
+        return smartDecodeToken(tok, preserveCaps);
+      }
+
+      // Non-smart decode: use selected moveN, but ALWAYS read suffix from the word
       const moveN = +moveNEl.value;
-      const suffix = getSuffixForWord(wordIndex++);
-      return mode === "encode"
-        ? encodeWord(tok, suffix, preserveCaps, moveN)
-        : decodeWord(tok, suffix, preserveCaps, moveN);
+      const sfx = (suffixModeEl.value === "single") ? suffixEl.value : suffixFromToken(tok);
+      wordIndex++;
+      return decodeWord(tok, sfx, preserveCaps, moveN);
     }
     return tok;
   }).join("");
 }
 
 /* ===== Buttons ===== */
-document.getElementById("encode").onclick = () =>
+document.getElementById("encode").onclick = () => {
   outputEl.value = transform(inputEl.value, "encode");
+};
 
-document.getElementById("decode").onclick = () =>
+document.getElementById("decode").onclick = () => {
   outputEl.value = transform(inputEl.value, "decode");
+};
 
 document.getElementById("clear").onclick = () => {
   inputEl.value = "";
