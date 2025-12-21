@@ -192,7 +192,7 @@ function encodeWord(word, suffix, preserveCaps, moveN) {
 function decodeWord(word, suffix, preserveCaps, moveN) {
   const style = preserveCaps ? detectCapsStyle(word) : "lower";
   const lower = word.toLowerCase();
-  if (!lower.endsWith(suffix)) return word;
+  if (!suffix || !lower.endsWith(suffix)) return word;
 
   const core = lower.slice(0, -suffix.length);
   const n = Math.min(moveN, core.length);
@@ -212,6 +212,13 @@ function getSuffixForEncode(i) {
   return suffixEl.value;
 }
 
+/* ===== Decode suffix extraction (read actual last letter) ===== */
+function suffixFromToken(tok) {
+  const low = tok.toLowerCase();
+  const last = low[low.length - 1] || "";
+  return /[a-z]/.test(last) ? last : null;
+}
+
 /* ===== Transform ===== */
 function transform(text, mode) {
   const preserveCaps = capsEl.value === "yes";
@@ -220,10 +227,16 @@ function transform(text, mode) {
   return tokenize(text).map(tok => {
     if (/^[A-Za-z]/.test(tok)) {
       const moveN = +moveNEl.value;
-      const suffix = getSuffixForEncode(wordIndex++);
-      return mode === "encode"
-        ? encodeWord(tok, suffix, preserveCaps, moveN)
-        : decodeWord(tok, suffix, preserveCaps, moveN);
+
+      if (mode === "encode") {
+        const suffix = getSuffixForEncode(wordIndex++);
+        return encodeWord(tok, suffix, preserveCaps, moveN);
+      }
+
+      // decode: ALWAYS read suffix from the word (works for single/rotate/random)
+      const sfx = suffixFromToken(tok);
+      wordIndex++;
+      return decodeWord(tok, sfx, preserveCaps, moveN);
     }
     return tok;
   }).join("");
