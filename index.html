@@ -3,257 +3,157 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Fliplish Translator</title>
-
+  <title>Vowel Flip Translator (A↔O, E↔I)</title>
   <style>
-    :root {
-      --bg: #d8cbb8;
-      --panel: rgba(255,255,255,0.78);
-      --border: rgba(17, 24, 39, 0.18);
-      --text: #111827;
+    :root{
+      --bg:#0b132b; --card:#ffffff; --text:#0f172a; --muted:#64748b;
+      --border:rgba(15,23,42,.15); --accent:#38bdf8;
     }
-
-    * { box-sizing: border-box; }
-    html, body { overflow-x: hidden; }
-
-    body {
-      font-family: system-ui, -apple-system, Segoe UI, sans-serif;
-      margin: 24px;
-      line-height: 1.35;
-      background: var(--bg);
-      color: var(--text);
+    *{box-sizing:border-box}
+    body{
+      margin:0; padding:24px;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background:linear-gradient(180deg,var(--bg),#111827);
+      color:var(--text);
     }
-
-    .container {
-      max-width: 820px;
-      margin: 0 auto;
-      width: 100%;
+    .wrap{max-width:980px;margin:0 auto}
+    header{color:#fff;margin-bottom:16px}
+    header h1{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:.3px}
+    header p{margin:0;color:rgba(255,255,255,.75);font-size:14px;line-height:1.4}
+    .grid{display:grid;grid-template-columns:1fr;gap:12px}
+    @media(min-width:900px){.grid{grid-template-columns:1fr 1fr}}
+    .card{
+      background:var(--card); border:1px solid var(--border);
+      border-radius:14px; padding:14px;
+      box-shadow:0 18px 45px rgba(0,0,0,.18);
     }
-
-    textarea {
-      width: 100%;
-      min-height: 140px;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--panel);
-      color: var(--text);
-      outline: none;
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    textarea{
+      width:100%; min-height:220px; resize:vertical;
+      padding:12px; border-radius:12px; border:1px solid var(--border);
+      outline:none; font-size:14px; line-height:1.45;
     }
-
-    .row {
-      display: flex;
-      gap: 12px;
-      margin: 12px 0;
-      flex-wrap: wrap;
-      align-items: center;
+    textarea:focus{
+      border-color:rgba(56,189,248,.65);
+      box-shadow:0 0 0 3px rgba(56,189,248,.22);
     }
-
-    button, select, input[type="checkbox"] { font-size: 15px; }
-
-    button, select {
-      padding: 10px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.65);
-      cursor: pointer;
+    .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px}
+    button{
+      appearance:none; border:1px solid var(--border); background:#fff;
+      padding:9px 12px; border-radius:12px; font-weight:700;
+      cursor:pointer; font-size:13px;
     }
-
-    label.chk {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.45);
-      user-select: none;
+    button:hover{
+      border-color:rgba(56,189,248,.75);
+      box-shadow:0 0 0 3px rgba(56,189,248,.18);
     }
-
-    .hint { opacity: 0.75; font-size: 13px; margin-top: 8px; }
+    .pill{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:8px 10px; border:1px solid var(--border);
+      border-radius:999px; background:#fff; font-size:13px;
+    }
+    .pill input{transform:translateY(1px)}
+    .small{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.35}
+    code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
   </style>
 </head>
 
 <body>
-<div class="container">
-  <h1>Fliplish Translator</h1>
+  <div class="wrap">
+    <header>
+      <h1>Vowel Flip Translator</h1>
+      <p>
+        Swap vowels everywhere: <b>A ↔ O</b> and <b>E ↔ I</b>. No exceptions. Punctuation stays.
+      </p>
+    </header>
 
-  <textarea id="input" placeholder="Type English (or coded text) here..."></textarea>
+    <div class="grid">
+      <div class="card">
+        <label for="input">Input</label>
+        <textarea id="input" placeholder="Type here... e.g. The car is white and black."></textarea>
 
-  <div class="row">
-    <button id="encode">Encode →</button>
-    <button id="decode">← Decode</button>
-    <button id="clear">Clear</button>
+        <div class="controls">
+          <div class="pill">
+            <input type="checkbox" id="live" checked>
+            <label for="live" style="margin:0;color:inherit;">Live translate</label>
+          </div>
+          <button id="copyBtn" type="button">Copy output</button>
+          <button id="clearBtn" type="button">Clear</button>
+        </div>
 
-    <label>
-      Suffix mode:
-      <select id="suffixMode">
-        <option value="single" selected>Single</option>
-        <option value="aeiou">AEIOU Rotate</option>
-        <option value="random">Random (A–Z)</option>
-      </select>
-    </label>
+        <div class="small">
+          Examples: <code>the → thi</code>, <code>car → cor</code>, <code>white → wheti</code>, <code>presents → prisints</code>
+        </div>
+      </div>
 
-    <label>
-      Suffix:
-      <select id="suffix"></select>
-    </label>
-
-    <label>
-      Move letters:
-      <select id="moveN">
-        <option value="1" selected>1</option>
-        <option value="2">2</option>
-      </select>
-    </label>
-
-    <label>
-      Preserve capitalization:
-      <select id="caps">
-        <option value="yes">Yes</option>
-        <option value="no" selected>No</option>
-      </select>
-    </label>
-
-    <label class="chk" title="Recommended: tries both 1-letter and 2-letter moves per word and picks the most English-looking result">
-      <input id="smartDecode" type="checkbox" checked />
-      Smart Decode
-    </label>
+      <div class="card">
+        <label for="output">Output</label>
+        <textarea id="output" readonly placeholder="Output appears here..."></textarea>
+        <div class="small">
+          Rules: <code>a↔o</code>, <code>e↔i</code> (case preserved).
+        </div>
+      </div>
+    </div>
   </div>
 
-  <textarea id="output" readonly></textarea>
+  <script>
+    const inputEl = document.getElementById("input");
+    const outputEl = document.getElementById("output");
+    const liveEl = document.getElementById("live");
+    const copyBtn = document.getElementById("copyBtn");
+    const clearBtn = document.getElementById("clearBtn");
 
-  <div class="hint">
-    How Fliplish works: Each word is encoded by moving the first 1–2 letters to the end and adding a suffix letter.
-    Decode removes that suffix letter and moves letters back, preserving punctuation and spacing.
-  </div>
-</div>
-
-<script>
-/* ===== Suffixes (A–Z only) ===== */
-const LETTERS = "abcdefghijklmnopqrstuvwxyz".split("");
-
-/* ===== Elements ===== */
-const inputEl = document.getElementById("input");
-const outputEl = document.getElementById("output");
-const suffixEl = document.getElementById("suffix");
-const suffixModeEl = document.getElementById("suffixMode");
-const moveNEl = document.getElementById("moveN");
-const capsEl = document.getElementById("caps");
-const smartDecodeEl = document.getElementById("smartDecode");
-
-/* ===== Init suffix dropdown ===== */
-(function initSuffix() {
-  suffixEl.innerHTML = "";
-  for (const s of LETTERS) {
-    const o = document.createElement("option");
-    o.value = s;
-    o.textContent = s.toUpperCase();
-    if (s === "a") o.selected = true;
-    suffixEl.appendChild(o);
-  }
-})();
-
-function syncSuffixUI() {
-  const disabled = suffixModeEl.value !== "single";
-  suffixEl.disabled = disabled;
-  suffixEl.style.opacity = disabled ? "0.55" : "1";
-}
-suffixModeEl.addEventListener("change", syncSuffixUI);
-syncSuffixUI();
-
-/* ===== Tokenizer ===== */
-function tokenize(text) {
-  return text.match(/[A-Za-z]+(?:['’][A-Za-z]+)*|[^A-Za-z]+/g) || [];
-}
-
-/* ===== Caps detection ===== */
-function detectCapsStyle(word) {
-  if (word === word.toUpperCase()) return "upper";
-  if (word[0] === word[0].toUpperCase() && word.slice(1) === word.slice(1).toLowerCase())
-    return "title";
-  return "lower";
-}
-
-/* ===== Encode / Decode ===== */
-function encodeWord(word, suffix, preserveCaps, moveN) {
-  const style = preserveCaps ? detectCapsStyle(word) : "lower";
-  const lower = word.toLowerCase();
-  const n = Math.min(moveN, lower.length);
-  let coded = lower.slice(n) + lower.slice(0, n) + suffix;
-
-  if (!preserveCaps) return coded;
-  if (style === "upper") return coded.toUpperCase();
-  if (style === "title") return coded[0].toUpperCase() + coded.slice(1);
-  return coded;
-}
-
-function decodeWord(word, suffix, preserveCaps, moveN) {
-  const style = preserveCaps ? detectCapsStyle(word) : "lower";
-  const lower = word.toLowerCase();
-  if (!suffix || !lower.endsWith(suffix)) return word;
-
-  const core = lower.slice(0, -suffix.length);
-  const n = Math.min(moveN, core.length);
-  let plain = core.slice(-n) + core.slice(0, -n);
-
-  if (!preserveCaps) return plain;
-  if (style === "upper") return plain.toUpperCase();
-  if (style === "title") return plain[0].toUpperCase() + plain.slice(1);
-  return plain;
-}
-
-/* ===== Encode suffix selection ===== */
-function getSuffixForEncode(i) {
-  const mode = suffixModeEl.value;
-  if (mode === "aeiou") return ["a","e","i","o","u"][i % 5];
-  if (mode === "random") return LETTERS[Math.floor(Math.random() * LETTERS.length)];
-  return suffixEl.value;
-}
-
-/* ===== Decode suffix extraction (read actual last letter) ===== */
-function suffixFromToken(tok) {
-  const low = tok.toLowerCase();
-  const last = low[low.length - 1] || "";
-  return /[a-z]/.test(last) ? last : null;
-}
-
-/* ===== Transform ===== */
-function transform(text, mode) {
-  const preserveCaps = capsEl.value === "yes";
-  let wordIndex = 0;
-
-  return tokenize(text).map(tok => {
-    if (/^[A-Za-z]/.test(tok)) {
-      const moveN = +moveNEl.value;
-
-      if (mode === "encode") {
-        const suffix = getSuffixForEncode(wordIndex++);
-        return encodeWord(tok, suffix, preserveCaps, moveN);
+    function flipChar(ch){
+      switch (ch){
+        case "a": return "o";
+        case "o": return "a";
+        case "e": return "i";
+        case "i": return "e";
+        case "A": return "O";
+        case "O": return "A";
+        case "E": return "I";
+        case "I": return "E";
+        default: return ch;
       }
-
-      // decode: ALWAYS read suffix from the word (works for single/rotate/random)
-      const sfx = suffixFromToken(tok);
-      wordIndex++;
-      return decodeWord(tok, sfx, preserveCaps, moveN);
     }
-    return tok;
-  }).join("");
-}
 
-/* ===== Buttons ===== */
-document.getElementById("encode").onclick = () =>
-  outputEl.value = transform(inputEl.value, "encode");
+    function translateText(text){
+      let out = "";
+      for (const ch of text){
+        out += flipChar(ch);
+      }
+      return out;
+    }
 
-document.getElementById("decode").onclick = () =>
-  outputEl.value = transform(inputEl.value, "decode");
+    function update(){
+      outputEl.value = translateText(inputEl.value);
+    }
 
-document.getElementById("clear").onclick = () => {
-  inputEl.value = "";
-  outputEl.value = "";
-  inputEl.focus();
-};
-</script>
+    inputEl.addEventListener("input", () => {
+      if (liveEl.checked) update();
+    });
+
+    liveEl.addEventListener("change", () => {
+      if (liveEl.checked) update();
+    });
+
+    copyBtn.addEventListener("click", async () => {
+      try{
+        await navigator.clipboard.writeText(outputEl.value);
+        copyBtn.textContent = "Copied!";
+        setTimeout(()=>copyBtn.textContent="Copy output", 900);
+      } catch(e){
+        alert("Copy failed (clipboard permission). You can manually select + copy.");
+      }
+    });
+
+    clearBtn.addEventListener("click", () => {
+      inputEl.value = "";
+      outputEl.value = "";
+      inputEl.focus();
+    });
+
+    update();
+  </script>
 </body>
 </html>
