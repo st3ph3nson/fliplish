@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Vowel Flip Translator (A↔O, E↔I)</title>
+  <title>Emoji Alphabet Translator</title>
   <style>
     :root{
       --bg:#0b132b; --card:#ffffff; --text:#0f172a; --muted:#64748b;
@@ -61,16 +61,16 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>Vowel Flip Translator</h1>
+      <h1>Emoji Alphabet Translator</h1>
       <p>
-        Swap vowels everywhere: <b>A ↔ O</b> and <b>E ↔ I</b>. No exceptions. Punctuation stays.
+        Every letter becomes an emoji. Case-insensitive. Spaces/punctuation stay.
       </p>
     </header>
 
     <div class="grid">
       <div class="card">
         <label for="input">Input</label>
-        <textarea id="input" placeholder="Type here... e.g. The car is white and black."></textarea>
+        <textarea id="input" placeholder="Type here... e.g. The Bengals are eliminated."></textarea>
 
         <div class="controls">
           <div class="pill">
@@ -82,7 +82,7 @@
         </div>
 
         <div class="small">
-          Examples: <code>the → thi</code>, <code>car → cor</code>, <code>white → wheti</code>, <code>presents → prisints</code>
+          Example: <code>ABC</code> → <code>🤩😀😌</code>
         </div>
       </div>
 
@@ -90,7 +90,7 @@
         <label for="output">Output</label>
         <textarea id="output" readonly placeholder="Output appears here..."></textarea>
         <div class="small">
-          Rules: <code>a↔o</code>, <code>e↔i</code> (case preserved).
+          Mapping: A🤩 B😀 C😌 D🥳 E🤣 F🧐 G😞 H😤 I😱 J😒 K🥰 L🙃 M🙂 N🥲 O😵‍💫 P🤠 Q😷 R😮‍💨 S😬 T🤭 U😭 V🥺 W😡 X😟 Y😛 Z🫠
         </div>
       </div>
     </div>
@@ -103,24 +103,46 @@
     const copyBtn = document.getElementById("copyBtn");
     const clearBtn = document.getElementById("clearBtn");
 
-    function flipChar(ch){
-      switch (ch){
-        case "a": return "🥹";
-        case "o": return "😎";
-        case "e": return "🤩";
-        case "i": return "😏";
-        case "A": return "🥹";
-        case "O": return "😎";
-        case "E": return "🤩";
-        case "I": return "😏";
-        default: return ch;
-      }
+    // Letter -> Emoji mapping (case-insensitive)
+    const EMOJI_MAP = {
+      a: "🤩",
+      b: "😀",
+      c: "😌",
+      d: "🥳",
+      e: "🤣",
+      f: "🧐",
+      g: "😞",
+      h: "😤",
+      i: "😱",
+      j: "😒",
+      k: "🥰",
+      l: "🙃",
+      m: "🙂",
+      n: "🥲",
+      o: "😵‍💫",
+      p: "🤠",
+      q: "😷",
+      r: "😮‍💨",
+      s: "😬",
+      t: "🤭",
+      u: "😭",
+      v: "🥺",
+      w: "😡",
+      x: "😟",
+      y: "😛",
+      z: "🫠"
+    };
+
+    function toEmoji(ch){
+      const low = ch.toLowerCase();
+      return EMOJI_MAP[low] ?? ch; // keep spaces, punctuation, numbers, etc.
     }
 
     function translateText(text){
       let out = "";
+      // for...of iterates by Unicode codepoints (works well with emoji output)
       for (const ch of text){
-        out += flipChar(ch);
+        out += toEmoji(ch);
       }
       return out;
     }
