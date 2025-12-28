@@ -63,7 +63,7 @@
     <header>
       <h1>Emoji Alphabet Translator</h1>
       <p>
-        Every letter becomes an emoji. Case-insensitive. Spaces/punctuation stay.
+        Letter-swap engine + digraph sound changes. Case-insensitive. Spaces/punctuation stay.
       </p>
     </header>
 
@@ -82,7 +82,8 @@
         </div>
 
         <div class="small">
-          Example: <code>ABC</code> → <code>🤩😀😌</code>
+          Digraphs (apply first): <code>th → d</code>, <code>ng → n</code><br/>
+          Then letter swaps: <code>a↔o</code>, <code>e↔i</code>, <code>y↔u</code>, plus <code>w→v</code>
         </div>
       </div>
 
@@ -90,7 +91,7 @@
         <label for="output">Output</label>
         <textarea id="output" readonly placeholder="Output appears here..."></textarea>
         <div class="small">
-          Mapping: A🤩 B😀 C😌 D🥳 E🤣 F🧐 G😞 H😤 I😱 J😒 K🥰 L🙃 M🙂 N🥲 O😵‍💫 P🤠 Q😷 R😮‍💨 S😬 T🤭 U😭 V🥺 W😡 X😟 Y😛 Z🫠
+          (You can swap these outputs for emojis later; the important fix here is handling <code>th</code>/<code>ng</code> correctly.)
         </div>
       </div>
     </div>
@@ -103,48 +104,40 @@
     const copyBtn = document.getElementById("copyBtn");
     const clearBtn = document.getElementById("clearBtn");
 
-    // Letter -> Emoji mapping (case-insensitive)
-    const EMOJI_MAP = {
+    // Single-character mapping ONLY (digraphs are handled before this step)
+    const MAP = {
       a: "o",
-      b: "b",
-      c: "c",
-      d: "d",
-      e: "i",
-      f: "f",
-      g: "g",
-      h: "h",
-      i: "e",
-      j: "j",
-      k: "k",
-      l: "l",
-      m: "m",
-      n: "n",
       o: "a",
-      p: "p",
-      q: "q",
-      r: "r",
-      s: "s",
-      t: "t",
-      u: "y",
-      v: "v",
-      w: "v",
-      x: "x",
+      e: "i",
+      i: "e",
       y: "u",
-      z: "z",
-      ng: "n",
-      th: "d"
+      u: "y",
+      w: "v"
+      // everything else passes through unchanged
     };
 
-    function toEmoji(ch){
+    // Apply multi-character sound changes FIRST (so "th" and "ng" can actually trigger)
+    function preprocess(text){
+      return text
+        .replace(/th/gi, "d")
+        .replace(/ng/gi, "n");
+    }
+
+    function mapChar(ch){
       const low = ch.toLowerCase();
-      return EMOJI_MAP[low] ?? ch; // keep spaces, punctuation, numbers, etc.
+      const mapped = MAP[low];
+      if (!mapped) return ch;
+
+      // preserve case if the original character was uppercase
+      if (ch !== low) return mapped.toUpperCase();
+      return mapped;
     }
 
     function translateText(text){
+      const pre = preprocess(text);
       let out = "";
-      // for...of iterates by Unicode codepoints (works well with emoji output)
-      for (const ch of text){
-        out += toEmoji(ch);
+      for (const ch of pre){
+        out += mapChar(ch);
       }
       return out;
     }
