@@ -118,11 +118,14 @@
 
     // Apply multi-character sound changes FIRST (so "th" and "ng" can actually trigger)
     function preprocess(text){
-      return text
-        .replace(/th/gi, "þ")
-        .replace(/my,"min")
-        .replace(/ng/gi, "n");
-    }
+  return text
+    // Possessive first (word-boundary protected)
+    .replace(/\bmy\b/gi, "min")
+
+    // Digraphs next
+    .replace(/th/gi, "þ")
+    .replace(/ng/gi, "n");
+}
 
     function mapChar(ch){
       const low = ch.toLowerCase();
