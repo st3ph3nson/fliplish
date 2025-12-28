@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Emoji Alphabet Translator</title>
+  <title>Vowel Swap Translator (A↔O, E↔I, U↔Y)</title>
   <style>
     :root{
       --bg:#0b132b; --card:#ffffff; --text:#0f172a; --muted:#64748b;
@@ -61,9 +61,9 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>Emoji Alphabet Translator</h1>
+      <h1>Vowel Swap Translator</h1>
       <p>
-        Letter-swap engine + digraph sound changes. Case-insensitive. Spaces/punctuation stay.
+        Swap vowels everywhere: <b>A ↔ O</b>, <b>E ↔ I</b>, <b>U ↔ Y</b>. No other rules. Case preserved.
       </p>
     </header>
 
@@ -82,8 +82,8 @@
         </div>
 
         <div class="small">
-          Digraphs (apply first): <code>th → d</code>, <code>ng → n</code><br/>
-          Then letter swaps: <code>a↔o</code>, <code>e↔i</code>, <code>y↔u</code>, plus <code>w→v</code>
+          Rules: <code>a↔o</code>, <code>e↔i</code>, <code>u↔y</code> (case preserved).<br/>
+          Example: <code>music</code> → <code>mysuc</code>
         </div>
       </div>
 
@@ -91,7 +91,7 @@
         <label for="output">Output</label>
         <textarea id="output" readonly placeholder="Output appears here..."></textarea>
         <div class="small">
-          (You can swap these outputs for emojis later; the important fix here is handling <code>th</code>/<code>ng</code> correctly.)
+          Only vowel swaps. Consonants, spaces, punctuation stay the same.
         </div>
       </div>
     </div>
@@ -104,44 +104,28 @@
     const copyBtn = document.getElementById("copyBtn");
     const clearBtn = document.getElementById("clearBtn");
 
-    // Single-character mapping ONLY (digraphs are handled before this step)
-    const MAP = {
-      a: "o",
-      o: "a",
-      e: "i",
-      i: "e",
-      y: "u",
-      u: "y",
-      w: "v"
-      // everything else passes through unchanged
-    };
-
-    // Apply multi-character sound changes FIRST (so "th" and "ng" can actually trigger)
-    function preprocess(text){
-  return text
-    // Possessive first (word-boundary protected)
-    .replace(/\bmy\b/gi, "min")
-
-    // Digraphs next
-    .replace(/th/gi, "þ")
-    .replace(/ng/gi, "n");
-}
-
-    function mapChar(ch){
-      const low = ch.toLowerCase();
-      const mapped = MAP[low];
-      if (!mapped) return ch;
-
-      // preserve case if the original character was uppercase
-      if (ch !== low) return mapped.toUpperCase();
-      return mapped;
+    function swapVowel(ch){
+      switch(ch){
+        case "a": return "o";
+        case "o": return "a";
+        case "e": return "i";
+        case "i": return "e";
+        case "u": return "y";
+        case "y": return "u";
+        case "A": return "O";
+        case "O": return "A";
+        case "E": return "I";
+        case "I": return "E";
+        case "U": return "Y";
+        case "Y": return "U";
+        default: return ch;
+      }
     }
 
     function translateText(text){
-      const pre = preprocess(text);
       let out = "";
-      for (const ch of pre){
-        out += mapChar(ch);
+      for (const ch of text){
+        out += swapVowel(ch);
       }
       return out;
     }
