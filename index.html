@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Vowel Swap Translator (A↔O, E↔I, U↔Y)</title>
+  <title>Vowel Swap + Reverse Words (A↔O, E↔I, U↔Y)</title>
   <style>
     :root{
       --bg:#0b132b; --card:#ffffff; --text:#0f172a; --muted:#64748b;
@@ -61,16 +61,16 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>Vowel Swap Translator</h1>
+      <h1>Vowel Swap + Reverse Words</h1>
       <p>
-        Swap vowels everywhere: <b>A ↔ O</b>, <b>E ↔ I</b>, <b>U ↔ Y</b>. No other rules. Case preserved.
+        Swap vowels everywhere: <b>A ↔ O</b>, <b>E ↔ I</b>, <b>U ↔ Y</b>, then reverse word order.
       </p>
     </header>
 
     <div class="grid">
       <div class="card">
         <label for="input">Input</label>
-        <textarea id="input" placeholder="Type here... e.g. The Bengals are eliminated."></textarea>
+        <textarea id="input" placeholder="Type here... e.g. what is your problem"></textarea>
 
         <div class="controls">
           <div class="pill">
@@ -82,8 +82,8 @@
         </div>
 
         <div class="small">
-          Rules: <code>a↔o</code>, <code>e↔i</code>, <code>u↔y</code> (case preserved).<br/>
-          Example: <code>music</code> → <code>mysuc</code>
+          Rules: <code>a↔o</code>, <code>e↔i</code>, <code>u↔y</code>, then reverse words.<br/>
+          Example: <code>what is your problem</code> → <code>prablim uayr es whot</code>
         </div>
       </div>
 
@@ -91,7 +91,7 @@
         <label for="output">Output</label>
         <textarea id="output" readonly placeholder="Output appears here..."></textarea>
         <div class="small">
-          Only vowel swaps. Consonants, spaces, punctuation stay the same.
+          Punctuation stays attached to its word (simple mode).
         </div>
       </div>
     </div>
@@ -122,12 +122,32 @@
       }
     }
 
-    function translateText(text){
+    // Vowel-swap an entire word/token
+    function swapWord(token){
       let out = "";
-      for (const ch of text){
-        out += swapVowel(ch);
-      }
+      for (const ch of token) out += swapVowel(ch);
       return out;
+    }
+
+    function translateText(text){
+      // Split into tokens that preserve whitespace so we can rebuild cleanly.
+      // We'll reverse only the WORD tokens, not the whitespace tokens.
+      const tokens = text.match(/\s+|[^\s]+/g) || [];
+
+      // Extract word tokens (non-whitespace), swap vowels on them
+      const words = tokens
+        .filter(t => !/^\s+$/.test(t))
+        .map(swapWord)
+        .reverse();
+
+      // Rebuild: keep original whitespace positions, but pull from reversed words
+      let wi = 0;
+      const rebuilt = tokens.map(t => {
+        if (/^\s+$/.test(t)) return t;         // keep spacing exactly
+        return words[wi++] ?? "";              // replace word token
+      });
+
+      return rebuilt.join("");
     }
 
     function update(){
