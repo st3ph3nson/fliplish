@@ -3,171 +3,253 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Vowel Swap + Reverse Words (A↔O, E↔I, U↔Y)</title>
+  <title>Pig Latin Suffix Translator</title>
+
   <style>
     :root{
-      --bg:#0b132b; --card:#ffffff; --text:#0f172a; --muted:#64748b;
-      --border:rgba(15,23,42,.15); --accent:#38bdf8;
+      --bg:#0b132b;
+      --panel:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --border:rgba(15,23,42,.14);
+      --shadow:0 18px 45px rgba(0,0,0,.18);
+      --accent:#38bdf8;
     }
     *{box-sizing:border-box}
     body{
-      margin:0; padding:24px;
+      margin:0; padding:28px;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
       background:linear-gradient(180deg,var(--bg),#111827);
       color:var(--text);
     }
-    .wrap{max-width:980px;margin:0 auto}
+    .wrap{max-width:1020px;margin:0 auto}
     header{color:#fff;margin-bottom:16px}
-    header h1{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:.3px}
-    header p{margin:0;color:rgba(255,255,255,.75);font-size:14px;line-height:1.4}
+    header h1{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:.25px}
+    header p{margin:0;color:rgba(255,255,255,.75);font-size:14px;line-height:1.45}
+
     .grid{display:grid;grid-template-columns:1fr;gap:12px}
-    @media(min-width:900px){.grid{grid-template-columns:1fr 1fr}}
+    @media(min-width:920px){.grid{grid-template-columns:1fr 1fr}}
+
     .card{
-      background:var(--card); border:1px solid var(--border);
-      border-radius:14px; padding:14px;
-      box-shadow:0 18px 45px rgba(0,0,0,.18);
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px;
+      box-shadow:var(--shadow);
     }
     label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
     textarea{
-      width:100%; min-height:220px; resize:vertical;
-      padding:12px; border-radius:12px; border:1px solid var(--border);
-      outline:none; font-size:14px; line-height:1.45;
+      width:100%; min-height:240px; resize:vertical;
+      padding:12px; border-radius:12px;
+      border:1px solid var(--border);
+      outline:none; font-size:14px; line-height:1.5;
     }
     textarea:focus{
       border-color:rgba(56,189,248,.65);
       box-shadow:0 0 0 3px rgba(56,189,248,.22);
     }
-    .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px}
-    button{
-      appearance:none; border:1px solid var(--border); background:#fff;
-      padding:9px 12px; border-radius:12px; font-weight:700;
-      cursor:pointer; font-size:13px;
+
+    .controls{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      margin-top:10px;
     }
-    button:hover{
+    button, select{
+      appearance:none;
+      border:1px solid var(--border);
+      background:#fff;
+      padding:9px 12px;
+      border-radius:12px;
+      font-weight:700;
+      cursor:pointer;
+      font-size:13px;
+    }
+    button:hover, select:hover{
       border-color:rgba(56,189,248,.75);
       box-shadow:0 0 0 3px rgba(56,189,248,.18);
     }
     .pill{
       display:inline-flex; gap:8px; align-items:center;
-      padding:8px 10px; border:1px solid var(--border);
-      border-radius:999px; background:#fff; font-size:13px;
+      padding:8px 10px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      background:#fff;
+      font-size:13px;
     }
     .pill input{transform:translateY(1px)}
-    .small{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.35}
-    code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .small{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:10px;
+      line-height:1.45;
+    }
+    code{
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      font-size:12px;
+    }
   </style>
 </head>
 
 <body>
   <div class="wrap">
     <header>
-      <h1>Vowel Swap + Reverse Words</h1>
-      <p>
-        Swap vowels everywhere: <b>A ↔ O</b>, <b>E ↔ I</b>, <b>U ↔ Y</b>, then reverse word order.
-      </p>
+      <h1>Pig Latin Suffix Translator</h1>
+      <p>Standard Pig Latin core + a selectable ending (-ek / -eg / -en / -us / random). Punctuation-safe, case-preserving.</p>
     </header>
 
     <div class="grid">
       <div class="card">
         <label for="input">Input</label>
-        <textarea id="input" placeholder="Type here... e.g. what is your problem"></textarea>
+        <textarea id="input" placeholder="Type here... e.g. consonant cluster apple The house is outside."></textarea>
 
         <div class="controls">
+          <select id="endingMode" title="Choose ending">
+            <option value="ek">-ek</option>
+            <option value="eg">-eg</option>
+            <option value="en" selected>-en</option>
+            <option value="us">-us</option>
+            <option value="random">random (en/ek/eg/us)</option>
+          </select>
+
           <div class="pill">
-            <input type="checkbox" id="live" checked>
+            <input type="checkbox" id="live" checked />
             <label for="live" style="margin:0;color:inherit;">Live translate</label>
           </div>
+
           <button id="copyBtn" type="button">Copy output</button>
           <button id="clearBtn" type="button">Clear</button>
         </div>
 
         <div class="small">
-          Rules: <code>a↔o</code>, <code>e↔i</code>, <code>u↔y</code>, then reverse words.<br/>
-          Example: <code>what is your problem</code> → <code>prablim uayr es whot</code>
+          Rules:
+          <code>vowel-start word → word + ending</code>,
+          <code>consonant cluster moves</code> (e.g. <code>consonant → onsonantc + ending</code>, <code>cluster → ustercl + ending</code>).
+          <br/>
+          Examples (ending = <code>-us</code>):
+          <code>apple → appleus</code>,
+          <code>cluster → usterclus</code>
         </div>
       </div>
 
       <div class="card">
         <label for="output">Output</label>
         <textarea id="output" readonly placeholder="Output appears here..."></textarea>
-        <div class="small">
-          Punctuation stays attached to its word (simple mode).
-        </div>
       </div>
     </div>
   </div>
 
   <script>
-    const inputEl = document.getElementById("input");
-    const outputEl = document.getElementById("output");
-    const liveEl = document.getElementById("live");
-    const copyBtn = document.getElementById("copyBtn");
-    const clearBtn = document.getElementById("clearBtn");
+    const inputEl     = document.getElementById("input");
+    const outputEl    = document.getElementById("output");
+    const liveEl      = document.getElementById("live");
+    const endingMode  = document.getElementById("endingMode");
+    const copyBtn     = document.getElementById("copyBtn");
+    const clearBtn    = document.getElementById("clearBtn");
 
-    function swapVowel(ch){
-      switch(ch){
-        case "a": return "o";
-        case "o": return "a";
-        case "e": return "i";
-        case "i": return "e";
-        case "u": return "y";
-        case "y": return "u";
-        case "A": return "O";
-        case "O": return "A";
-        case "E": return "I";
-        case "I": return "E";
-        case "U": return "Y";
-        case "Y": return "U";
-        default: return ch;
-      }
+    const ENDINGS = ["en","ek","eg","us"];
+
+    function splitPreserveWhitespace(text){
+      return text.match(/\s+|[^\s]+/g) || [];
     }
 
-    // Vowel-swap an entire word/token
-    function swapWord(token){
-      let out = "";
-      for (const ch of token) out += swapVowel(ch);
-      return out;
+    // Keeps punctuation around words, keeps internal apostrophes like don't / I'm
+    function splitToken(token){
+      const m = token.match(/^([^A-Za-z]*)([A-Za-z]+(?:'[A-Za-z]+)*)?([^A-Za-z]*)$/);
+      if (!m || !m[2]) return null;
+      return { lead: m[1], word: m[2], trail: m[3] };
+    }
+
+    function applyCaseStyle(originalWord, mappedWord){
+      const isAllCaps = originalWord === originalWord.toUpperCase();
+      const isTitleCase =
+        originalWord[0] === originalWord[0].toUpperCase() &&
+        originalWord.slice(1) === originalWord.slice(1).toLowerCase();
+
+      if (isAllCaps) return mappedWord.toUpperCase();
+      if (isTitleCase) return mappedWord[0].toUpperCase() + mappedWord.slice(1).toLowerCase();
+      // otherwise keep mapped as produced (we produce lowercase by default)
+      return mappedWord;
+    }
+
+    // Vowels: aeiou, plus treat 'y' as a vowel ONLY if it's not the first letter
+    function isVowel(ch, index){
+      const c = ch.toLowerCase();
+      if ("aeiou".includes(c)) return true;
+      if (c === "y" && index > 0) return true;
+      return false;
+    }
+
+    function pickEnding(){
+      const mode = endingMode.value;
+      if (mode === "random"){
+        const idx = Math.floor(Math.random() * ENDINGS.length);
+        return ENDINGS[idx];
+      }
+      return mode; // ek/eg/en/us
+    }
+
+    function pigLatinCore(wordLower){
+      // vowel-start: unchanged
+      if (isVowel(wordLower[0], 0)) return { core: wordLower, moved: false };
+
+      // move initial consonant cluster up to first vowel (y counts as vowel after position 0)
+      let i = 0;
+      while (i < wordLower.length && !isVowel(wordLower[i], i)) i++;
+
+      // if no vowel found at all, just treat whole word as the cluster (no rotation benefit)
+      if (i === 0) return { core: wordLower, moved: false };
+      if (i >= wordLower.length) return { core: wordLower, moved: false };
+
+      const cluster = wordLower.slice(0, i);
+      const rest    = wordLower.slice(i);
+      return { core: rest + cluster, moved: true };
+    }
+
+    function translateWord(originalWord){
+      const ending = pickEnding();
+
+      const lower = originalWord.toLowerCase();
+      const { core } = pigLatinCore(lower);
+
+      // append ending directly (your style: no hyphen)
+      const mapped = core + ending;
+
+      // case style back onto result
+      return applyCaseStyle(originalWord, mapped);
     }
 
     function translateText(text){
-      // Split into tokens that preserve whitespace so we can rebuild cleanly.
-      // We'll reverse only the WORD tokens, not the whitespace tokens.
-      const tokens = text.match(/\s+|[^\s]+/g) || [];
+      const tokens = splitPreserveWhitespace(text);
 
-      // Extract word tokens (non-whitespace), swap vowels on them
-      const words = tokens
-        .filter(t => !/^\s+$/.test(t))
-        .map(swapWord)
-        .reverse();
+      return tokens.map(tok => {
+        if (/^\s+$/.test(tok)) return tok;
 
-      // Rebuild: keep original whitespace positions, but pull from reversed words
-      let wi = 0;
-      const rebuilt = tokens.map(t => {
-        if (/^\s+$/.test(t)) return t;         // keep spacing exactly
-        return words[wi++] ?? "";              // replace word token
-      });
+        const parts = splitToken(tok);
+        if (!parts) return tok;
 
-      return rebuilt.join("");
+        const { lead, word, trail } = parts;
+        return lead + translateWord(word) + trail;
+      }).join("");
     }
 
     function update(){
+      // NOTE: Random mode re-rolls per update (per keystroke).
+      // If you want random to "stick" per word while typing, tell me and I’ll lock it.
       outputEl.value = translateText(inputEl.value);
     }
 
-    inputEl.addEventListener("input", () => {
-      if (liveEl.checked) update();
-    });
-
-    liveEl.addEventListener("change", () => {
-      if (liveEl.checked) update();
-    });
+    inputEl.addEventListener("input", () => { if (liveEl.checked) update(); });
+    endingMode.addEventListener("change", () => update());
+    liveEl.addEventListener("change", () => { if (liveEl.checked) update(); });
 
     copyBtn.addEventListener("click", async () => {
       try{
         await navigator.clipboard.writeText(outputEl.value);
         copyBtn.textContent = "Copied!";
-        setTimeout(()=>copyBtn.textContent="Copy output", 900);
-      } catch(e){
+        setTimeout(() => copyBtn.textContent = "Copy output", 900);
+      } catch (e){
         alert("Copy failed (clipboard permission). You can manually select + copy.");
       }
     });
