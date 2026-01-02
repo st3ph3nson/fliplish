@@ -3,8 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Pig Latin Suffix Translator</title>
-
+  <title>Nordic Micro Translator (100-word core)</title>
   <style>
     :root{
       --bg:#0b132b;
@@ -12,255 +11,543 @@
       --text:#0f172a;
       --muted:#64748b;
       --border:rgba(15,23,42,.14);
-      --shadow:0 18px 45px rgba(0,0,0,.18);
       --accent:#38bdf8;
+      --shadow:0 18px 45px rgba(0,0,0,.18);
     }
     *{box-sizing:border-box}
     body{
-      margin:0; padding:28px;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-      background:linear-gradient(180deg,var(--bg),#111827);
-      color:var(--text);
+      margin:0; padding:24px;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background:linear-gradient(135deg,#0b132b 0%, #0f2a4a 55%, #0b132b 100%);
+      color:#fff;
     }
-    .wrap{max-width:1020px;margin:0 auto}
-    header{color:#fff;margin-bottom:16px}
-    header h1{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:.25px}
-    header p{margin:0;color:rgba(255,255,255,.75);font-size:14px;line-height:1.45}
-
-    .grid{display:grid;grid-template-columns:1fr;gap:12px}
-    @media(min-width:920px){.grid{grid-template-columns:1fr 1fr}}
-
+    .wrap{max-width:1100px;margin:0 auto;display:grid;gap:18px}
+    h1{font-size:20px;margin:0 0 6px 0}
+    p{margin:0 0 12px 0;color:#cbd5e1}
+    .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px}
+    @media (max-width: 980px){.grid{grid-template-columns:1fr}}
     .card{
       background:var(--panel);
+      color:var(--text);
       border:1px solid var(--border);
-      border-radius:14px;
-      padding:14px;
+      border-radius:16px;
       box-shadow:var(--shadow);
+      padding:16px;
     }
-    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    .label{font-weight:650;font-size:12px;letter-spacing:.04em;color:#334155;text-transform:uppercase;margin:4px 0 8px}
     textarea{
-      width:100%; min-height:240px; resize:vertical;
-      padding:12px; border-radius:12px;
+      width:100%;
+      min-height:160px;
+      resize:vertical;
+      border-radius:12px;
       border:1px solid var(--border);
-      outline:none; font-size:14px; line-height:1.5;
+      padding:12px;
+      font-size:14px;
+      line-height:1.35;
+      outline:none;
     }
-    textarea:focus{
-      border-color:rgba(56,189,248,.65);
-      box-shadow:0 0 0 3px rgba(56,189,248,.22);
-    }
-
-    .controls{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      align-items:center;
-      margin-top:10px;
-    }
-    button, select{
-      appearance:none;
-      border:1px solid var(--border);
-      background:#fff;
-      padding:9px 12px;
+    textarea:focus{border-color:rgba(56,189,248,.65); box-shadow:0 0 0 4px rgba(56,189,248,.18)}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    button{
+      border:0;
+      background:var(--accent);
+      color:#00111f;
+      padding:10px 14px;
       border-radius:12px;
       font-weight:700;
       cursor:pointer;
-      font-size:13px;
     }
-    button:hover, select:hover{
-      border-color:rgba(56,189,248,.75);
-      box-shadow:0 0 0 3px rgba(56,189,248,.18);
+    button.secondary{
+      background:#e2e8f0;
+      color:#0f172a;
     }
-    .pill{
-      display:inline-flex; gap:8px; align-items:center;
-      padding:8px 10px;
+    .hint{font-size:12px;color:var(--muted);margin-top:8px}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .split{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:12px;
+    }
+    .small{min-height:120px}
+    .status{
+      font-size:12px;
+      color:#0f172a;
+      background:#f1f5f9;
       border:1px solid var(--border);
-      border-radius:999px;
-      background:#fff;
-      font-size:13px;
+      border-radius:12px;
+      padding:10px 12px;
     }
-    .pill input{transform:translateY(1px)}
-    .small{
-      font-size:12px;
-      color:var(--muted);
-      margin-top:10px;
-      line-height:1.45;
-    }
-    code{
-      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-      font-size:12px;
-    }
+    .status strong{color:#0f172a}
   </style>
 </head>
-
 <body>
   <div class="wrap">
-    <header>
-      <h1>Pig Latin Suffix Translator</h1>
-      <p>Standard Pig Latin core + a selectable ending (-ek / -eg / -en / -us / random). Punctuation-safe, case-preserving.</p>
-    </header>
+    <div>
+      <h1>Nordic Micro Translator (100-word core + custom phrases)</h1>
+      <p>
+        Translates <span class="mono">micro → English</span>.
+        It checks phrase clusters in this order: <strong>5 words → 4 → 3 → 2 → 1</strong>.
+        You can add/extend meanings by adding new lines in the dictionaries.
+      </p>
+    </div>
 
     <div class="grid">
       <div class="card">
-        <label for="input">Input</label>
-        <textarea id="input" placeholder="Type here... e.g. consonant cluster apple The house is outside."></textarea>
+        <div class="label">Input (micro language)</div>
+        <textarea id="input" class="mono" placeholder="Example: mi må mat nu, mi trø vel arb"></textarea>
 
-        <div class="controls">
-          <select id="endingMode" title="Choose ending">
-            <option value="ek">-ek</option>
-            <option value="eg">-eg</option>
-            <option value="en" selected>-en</option>
-            <option value="us">-us</option>
-            <option value="random">random (en/ek/eg/us)</option>
-          </select>
-
-          <div class="pill">
-            <input type="checkbox" id="live" checked />
-            <label for="live" style="margin:0;color:inherit;">Live translate</label>
-          </div>
-
-          <button id="copyBtn" type="button">Copy output</button>
-          <button id="clearBtn" type="button">Clear</button>
+        <div class="row" style="margin-top:10px">
+          <button id="translateBtn">Translate</button>
+          <button id="clearBtn" class="secondary">Clear</button>
+          <button id="copyBtn" class="secondary">Copy output</button>
         </div>
-
-        <div class="small">
-          Rules:
-          <code>vowel-start word → word + ending</code>,
-          <code>consonant cluster moves</code> (e.g. <code>consonant → onsonantc + ending</code>, <code>cluster → ustercl + ending</code>).
-          <br/>
-          Examples (ending = <code>-us</code>):
-          <code>apple → appleus</code>,
-          <code>cluster → usterclus</code>
+        <div class="hint">
+          Tip: punctuation is preserved. Matching is case-insensitive.
         </div>
       </div>
 
       <div class="card">
-        <label for="output">Output</label>
-        <textarea id="output" readonly placeholder="Output appears here..."></textarea>
+        <div class="label">Output (English)</div>
+        <textarea id="output" class="mono" readonly placeholder="Translation appears here..."></textarea>
+        <div id="status" class="status" style="margin-top:10px">
+          <strong>Matches:</strong> 0 phrase(s), 0 word(s).
+        </div>
       </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="label">Custom phrase overrides (optional)</div>
+        <div class="split">
+          <textarea id="customPhrases" class="mono small" spellcheck="false"></textarea>
+          <div class="hint">
+            Format: <span class="mono">source phrase = english phrase</span><br/>
+            One per line. Use 2–5+ words. The translator will always prefer the longest match (5→1).<br/>
+            Example: <span class="mono">mi trø vel arb = I am so bored at work</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="label">Custom single-word additions (optional)</div>
+        <div class="split">
+          <textarea id="customWords" class="mono small" spellcheck="false"></textarea>
+          <div class="hint">
+            Format: <span class="mono">word = meaning</span><br/>
+            Example: <span class="mono">dra = take away / pull / remove</span><br/>
+            If you add a word here, it overrides the built-in one.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">Built-in 100-word core (micro → English)</div>
+      <div class="hint">
+        Note: I fixed one collision from our earlier draft by using <span class="mono">hond</span> for “hand”
+        so <span class="mono">han</span> can stay “he”.
+      </div>
+      <pre class="mono" style="white-space:pre-wrap;margin:10px 0 0 0; color:#0f172a; background:#f8fafc; border:1px solid var(--border); padding:12px; border-radius:12px" id="corePreview"></pre>
     </div>
   </div>
 
   <script>
-    const inputEl     = document.getElementById("input");
-    const outputEl    = document.getElementById("output");
-    const liveEl      = document.getElementById("live");
-    const endingMode  = document.getElementById("endingMode");
-    const copyBtn     = document.getElementById("copyBtn");
-    const clearBtn    = document.getElementById("clearBtn");
+    /******************************************************************
+     * 1) BUILT-IN CORE (100 words)
+     *    - You can edit these lists too, but recommended: use Custom boxes.
+     *    - Words are lowercase keys.
+     ******************************************************************/
 
-    const ENDINGS = ["en","ek","eg","us"];
+    // PRONOUNS (8)
+    const CORE_PRONOUNS = [
+      ["mi",  "I / me / my"],
+      ["tu",  "you"],
+      ["han", "he"],
+      ["sa",  "she"],
+      ["et",  "it"],
+      ["vi",  "we"],
+      ["de",  "they"],
+      ["alt", "all / everyone / everything"],
+    ];
 
-    function splitPreserveWhitespace(text){
-      return text.match(/\s+|[^\s]+/g) || [];
+    // VERBS (18)
+    const CORE_VERBS = [
+      ["es",   "be / exist"],
+      ["har",  "have"],
+      ["gor",  "do"],
+      ["far",  "go"],
+      ["kom",  "come"],
+      ["lag",  "make"],
+      ["tak",  "get / take / buy"],
+      ["giv",  "give"],
+      ["dra",  "take away / pull"],
+      ["sen",  "see"],
+      ["tal",  "say / speak"],
+      ["vit",  "know"],
+      ["ten",  "think"],
+      ["vil",  "want"],
+      ["må",   "need / must"],
+      ["lik",  "like"],
+      ["arb",  "work (verb)"],
+      ["hjel", "help"],
+    ];
+
+    // NOUNS (22)
+    const CORE_NOUNS = [
+      ["man",  "person"],
+      ["kar",  "man (male)"],
+      ["vin",  "woman"],
+      ["ung",  "child"],
+      ["sak",  "thing"],
+      ["stad", "place"],
+      ["hem",  "home"],
+      ["arb",  "work (noun)"],
+      ["tid",  "time"],
+      ["dag",  "day"],
+      ["nat",  "night"],
+      ["mat",  "food"],
+      ["vat",  "water"],
+      ["pen",  "money"],
+      ["bil",  "car"],
+      ["veg",  "road"],
+      ["kro",  "body"],
+      ["hond", "hand"],
+      ["hov",  "head"],
+      ["fel",  "problem"],
+      ["vei",  "way / path"],
+      ["liv",  "life"],
+    ];
+
+    // DESCRIPTORS (16)
+    const CORE_ADJ = [
+      ["bra",  "good"],
+      ["ill",  "bad"],
+      ["stor", "big"],
+      ["lil",  "small"],
+      ["ny",   "new"],
+      ["gam",  "old"],
+      ["het",  "hot"],
+      ["kal",  "cold"],
+      ["snar", "fast"],
+      ["seg",  "slow"],
+      ["let",  "easy"],
+      ["tung", "hard / heavy"],
+      ["trø",  "tired / bored / drained"],
+      ["full", "full"],
+      ["tom",  "empty"],
+      ["sam",  "same"],
+    ];
+
+    // FUNCTION WORDS (12)
+    const CORE_FUNC = [
+      ["den", "this"],
+      ["dat", "that"],
+      ["her", "here"],
+      ["der", "there"],
+      ["nu",  "now"],
+      ["før", "before"],
+      ["eft", "after"],
+      ["med", "with"],
+      ["for", "for"],
+      ["fra", "from"],
+      ["ne",  "no / not"],
+      ["og",  "and"],
+    ];
+
+    // PARTICLES (4)
+    const CORE_PART = [
+      ["ka",  "question marker"],
+      ["vel", "very"],
+      ["om",  "if"],
+      ["vor", "why"],
+    ];
+
+    // Build a base word dictionary (micro -> English gloss)
+    function buildCoreWordMap(){
+      const all = []
+        .concat(CORE_PRONOUNS, CORE_VERBS, CORE_NOUNS, CORE_ADJ, CORE_FUNC, CORE_PART);
+
+      // If duplicates exist, later entries overwrite earlier entries.
+      // That's okay (e.g., arb verb/noun gloss can be unified).
+      const m = Object.create(null);
+      for (const [k,v] of all) m[k.toLowerCase()] = v;
+      return m;
     }
 
-    // Keeps punctuation around words, keeps internal apostrophes like don't / I'm
-    function splitToken(token){
-      const m = token.match(/^([^A-Za-z]*)([A-Za-z]+(?:'[A-Za-z]+)*)?([^A-Za-z]*)$/);
-      if (!m || !m[2]) return null;
-      return { lead: m[1], word: m[2], trail: m[3] };
-    }
+    /******************************************************************
+     * 2) DEFAULT PHRASE OVERRIDES (optional)
+     *    These demonstrate how you can add multi-word meanings.
+     ******************************************************************/
+    const DEFAULT_PHRASE_OVERRIDES = [
+      // ["mi trø vel arb", "I am so bored at work"],
+      // ["mi må mat nu", "I need food now"],
+    ];
 
-    function applyCaseStyle(originalWord, mappedWord){
-      const isAllCaps = originalWord === originalWord.toUpperCase();
-      const isTitleCase =
-        originalWord[0] === originalWord[0].toUpperCase() &&
-        originalWord.slice(1) === originalWord.slice(1).toLowerCase();
-
-      if (isAllCaps) return mappedWord.toUpperCase();
-      if (isTitleCase) return mappedWord[0].toUpperCase() + mappedWord.slice(1).toLowerCase();
-      // otherwise keep mapped as produced (we produce lowercase by default)
-      return mappedWord;
-    }
-
-    // Vowels: aeiou, plus treat 'y' as a vowel ONLY if it's not the first letter
-    function isVowel(ch, index){
-      const c = ch.toLowerCase();
-      if ("aeiou".includes(c)) return true;
-      if (c === "y" && index > 0) return true;
-      return false;
-    }
-
-    function pickEnding(){
-      const mode = endingMode.value;
-      if (mode === "random"){
-        const idx = Math.floor(Math.random() * ENDINGS.length);
-        return ENDINGS[idx];
+    /******************************************************************
+     * 3) USER-EDITABLE PARSERS: "a = b" lines
+     ******************************************************************/
+    function parseEqualsLines(text){
+      // returns array of [lhs, rhs] for valid lines
+      const out = [];
+      const lines = (text || "").split(/\r?\n/);
+      for (let line of lines){
+        line = line.trim();
+        if (!line || line.startsWith("#") || line.startsWith("//")) continue;
+        const idx = line.indexOf("=");
+        if (idx === -1) continue;
+        const lhs = line.slice(0, idx).trim();
+        const rhs = line.slice(idx + 1).trim();
+        if (!lhs || !rhs) continue;
+        out.push([lhs, rhs]);
       }
-      return mode; // ek/eg/en/us
+      return out;
     }
 
-    function pigLatinCore(wordLower){
-      // vowel-start: unchanged
-      if (isVowel(wordLower[0], 0)) return { core: wordLower, moved: false };
-
-      // move initial consonant cluster up to first vowel (y counts as vowel after position 0)
-      let i = 0;
-      while (i < wordLower.length && !isVowel(wordLower[i], i)) i++;
-
-      // if no vowel found at all, just treat whole word as the cluster (no rotation benefit)
-      if (i === 0) return { core: wordLower, moved: false };
-      if (i >= wordLower.length) return { core: wordLower, moved: false };
-
-      const cluster = wordLower.slice(0, i);
-      const rest    = wordLower.slice(i);
-      return { core: rest + cluster, moved: true };
+    function normalizePhrase(s){
+      // collapse spaces, lowercase, keep diacritics
+      return (s || "")
+        .trim()
+        .replace(/\s+/g, " ")
+        .toLowerCase();
     }
 
-    function translateWord(originalWord){
-      const ending = pickEnding();
-
-      const lower = originalWord.toLowerCase();
-      const { core } = pigLatinCore(lower);
-
-      // append ending directly (your style: no hyphen)
-      const mapped = core + ending;
-
-      // case style back onto result
-      return applyCaseStyle(originalWord, mapped);
+    /******************************************************************
+     * 4) TOKENIZATION (preserve punctuation)
+     *    We split into "wordish" tokens and punctuation tokens.
+     ******************************************************************/
+    function tokenizeWithPunct(input){
+      // Matches sequences of letters (including diacritics) OR numbers OR punctuation
+      // Keeps punctuation as separate tokens.
+      const re = /([A-Za-zÀ-ÖØ-öø-ÿ]+|[0-9]+|[^\sA-Za-zÀ-ÖØ-öø-ÿ0-9])/g;
+      return (input.match(re) || []);
     }
 
-    function translateText(text){
-      const tokens = splitPreserveWhitespace(text);
-
-      return tokens.map(tok => {
-        if (/^\s+$/.test(tok)) return tok;
-
-        const parts = splitToken(tok);
-        if (!parts) return tok;
-
-        const { lead, word, trail } = parts;
-        return lead + translateWord(word) + trail;
-      }).join("");
+    function isWordToken(tok){
+      return /^[A-Za-zÀ-ÖØ-öø-ÿ]+$/.test(tok);
     }
 
-    function update(){
-      // NOTE: Random mode re-rolls per update (per keystroke).
-      // If you want random to "stick" per word while typing, tell me and I’ll lock it.
-      outputEl.value = translateText(inputEl.value);
+    function isPunct(tok){
+      return !isWordToken(tok) && !/^[0-9]+$/.test(tok);
     }
 
-    inputEl.addEventListener("input", () => { if (liveEl.checked) update(); });
-    endingMode.addEventListener("change", () => update());
-    liveEl.addEventListener("change", () => { if (liveEl.checked) update(); });
+    function joinTokensNicely(tokens){
+      // Put spaces between word/number tokens, but not before punctuation like , . ! ?
+      let out = "";
+      for (let i = 0; i < tokens.length; i++){
+        const t = tokens[i];
+        const prev = tokens[i-1];
 
-    copyBtn.addEventListener("click", async () => {
-      try{
-        await navigator.clipboard.writeText(outputEl.value);
-        copyBtn.textContent = "Copied!";
-        setTimeout(() => copyBtn.textContent = "Copy output", 900);
-      } catch (e){
-        alert("Copy failed (clipboard permission). You can manually select + copy.");
+        const needsSpace =
+          i > 0 &&
+          // don't put a space before punctuation
+          !isPunct(t) &&
+          // don't put space after opening punctuation like "("
+          !(prev === "(" || prev === "[" || prev === "{" || prev === "“" || prev === "\"");
+
+        if (needsSpace) out += " ";
+        out += t;
       }
-    });
+      return out;
+    }
 
-    clearBtn.addEventListener("click", () => {
+    /******************************************************************
+     * 5) PHRASE MATCHING (5→4→3→2→1)
+     ******************************************************************/
+    function translateMicroToEnglish(text, phraseMap, wordMap){
+      const rawTokens = tokenizeWithPunct(text);
+      const tokens = rawTokens.map(t => t); // copy
+
+      // We'll build a "word-only" view for phrase matching, but keep punctuation in output.
+      // Strategy:
+      // - Walk through tokens.
+      // - When at a word token, attempt to match phrases spanning WORD TOKENS only,
+      //   skipping punctuation tokens in between? (We will NOT skip punctuation for phrases to keep it simple.)
+      // - Practical: phrase matching occurs on contiguous word tokens separated by spaces only.
+      //
+      // To enforce that, we first create a simplified array of word tokens and an index mapping.
+      const wordTokens = [];
+      const wordIndexToTokenIndex = [];
+      for (let i=0; i<tokens.length; i++){
+        if (isWordToken(tokens[i])) {
+          wordIndexToTokenIndex.push(i);
+          wordTokens.push(tokens[i]);
+        }
+      }
+
+      let usedPhrases = 0;
+      let usedWords = 0;
+
+      // Translate in word-token space, then rebuild into token space
+      const outWordTokens = [];
+      for (let wi = 0; wi < wordTokens.length; ){
+        let matched = false;
+
+        // Try n-grams from 5 down to 1
+        for (let n = 5; n >= 1; n--){
+          if (wi + n > wordTokens.length) continue;
+
+          const slice = wordTokens.slice(wi, wi + n);
+          const key = normalizePhrase(slice.join(" "));
+          if (phraseMap[key]){
+            outWordTokens.push(phraseMap[key]);
+            wi += n;
+            usedPhrases++;
+            matched = true;
+            break;
+          }
+        }
+
+        if (!matched){
+          const w = wordTokens[wi];
+          const low = w.toLowerCase();
+          if (wordMap[low]){
+            outWordTokens.push(wordMap[low]);
+            usedWords++;
+          } else {
+            outWordTokens.push(w); // unknown word passthrough
+          }
+          wi++;
+        }
+      }
+
+      // Now rebuild the full token list:
+      // Replace each original word token with the corresponding translated word/phrase.
+      // Non-word tokens (punctuation) pass through.
+      const outTokens = [];
+      let outWi = 0;
+      for (let i=0; i<tokens.length; i++){
+        if (isWordToken(tokens[i])){
+          outTokens.push(outWordTokens[outWi++] ?? tokens[i]);
+        } else {
+          outTokens.push(tokens[i]);
+        }
+      }
+
+      // Join. (Note: phrase outputs may contain spaces; joinTokensNicely handles this okay.)
+      const joined = joinTokensNicely(outTokens);
+
+      return {
+        text: joined,
+        stats: { usedPhrases, usedWords }
+      };
+    }
+
+    /******************************************************************
+     * 6) WIRE UP UI
+     ******************************************************************/
+    const inputEl = document.getElementById("input");
+    const outputEl = document.getElementById("output");
+    const statusEl = document.getElementById("status");
+    const phrasesEl = document.getElementById("customPhrases");
+    const wordsEl = document.getElementById("customWords");
+    const corePreviewEl = document.getElementById("corePreview");
+
+    // Seed the custom boxes with helpful examples (you can delete)
+    phrasesEl.value =
+`# Add phrase overrides here (2+ words).
+# Format: micro phrase = English phrase
+# Examples:
+mi trø vel arb = I am so bored at work
+mi må mat nu = I need food now
+mi tak bil ny for mi ung = I bought a new car for my daughter`;
+
+    wordsEl.value =
+`# Add single-word overrides/additions here.
+# Format: word = meaning
+# Example (expanding dra later):
+dra = take away / pull
+dra = take away / pull / remove`;
+
+    function buildPhraseMap(){
+      const m = Object.create(null);
+
+      // Defaults (optional)
+      for (const [k,v] of DEFAULT_PHRASE_OVERRIDES){
+        m[normalizePhrase(k)] = v;
+      }
+
+      // User phrases
+      for (const [lhs, rhs] of parseEqualsLines(phrasesEl.value)){
+        m[normalizePhrase(lhs)] = rhs;
+      }
+      return m;
+    }
+
+    function buildWordMap(){
+      // core first, then user overrides
+      const core = buildCoreWordMap();
+      const user = Object.create(null);
+
+      // Important: allow multiple lines for same word; last wins.
+      for (const [lhs, rhs] of parseEqualsLines(wordsEl.value)){
+        user[lhs.toLowerCase().trim()] = rhs;
+      }
+
+      return Object.assign(core, user);
+    }
+
+    function updateCorePreview(){
+      const core = buildCoreWordMap();
+      // pretty print core sections
+      const sections = [
+        ["PRONOUNS", CORE_PRONOUNS],
+        ["VERBS", CORE_VERBS],
+        ["NOUNS", CORE_NOUNS],
+        ["DESCRIPTORS", CORE_ADJ],
+        ["FUNCTION WORDS", CORE_FUNC],
+        ["PARTICLES", CORE_PART],
+      ];
+
+      let out = "";
+      for (const [name, arr] of sections){
+        out += `${name}\n`;
+        out += arr.map(([k,v]) => `  ${k.padEnd(5," ")} = ${v}`).join("\n");
+        out += "\n\n";
+      }
+      // also show effective overrides count
+      const customWords = parseEqualsLines(wordsEl.value).length;
+      const customPhrases = parseEqualsLines(phrasesEl.value).length;
+      out += `# Custom entries currently loaded:\n`;
+      out += `#   phrase lines: ${customPhrases}\n`;
+      out += `#   word lines:   ${customWords}\n`;
+      corePreviewEl.textContent = out.trim();
+    }
+
+    function runTranslate(){
+      const phraseMap = buildPhraseMap();
+      const wordMap = buildWordMap();
+
+      const res = translateMicroToEnglish(inputEl.value, phraseMap, wordMap);
+      outputEl.value = res.text;
+
+      statusEl.innerHTML =
+        `<strong>Matches:</strong> ${res.stats.usedPhrases} phrase(s), ${res.stats.usedWords} word(s).`;
+    }
+
+    document.getElementById("translateBtn").addEventListener("click", runTranslate);
+    document.getElementById("clearBtn").addEventListener("click", () => {
       inputEl.value = "";
       outputEl.value = "";
+      statusEl.innerHTML = `<strong>Matches:</strong> 0 phrase(s), 0 word(s).`;
       inputEl.focus();
     });
+    document.getElementById("copyBtn").addEventListener("click", async () => {
+      try{
+        await navigator.clipboard.writeText(outputEl.value || "");
+        statusEl.innerHTML = `<strong>Copied:</strong> output text to clipboard.`;
+      } catch {
+        statusEl.innerHTML = `<strong>Copy failed:</strong> your browser blocked clipboard access.`;
+      }
+    });
 
-    update();
+    // Live update when dictionaries change
+    phrasesEl.addEventListener("input", () => { updateCorePreview(); runTranslate(); });
+    wordsEl.addEventListener("input", () => { updateCorePreview(); runTranslate(); });
+    inputEl.addEventListener("input", () => { runTranslate(); });
+
+    // init
+    updateCorePreview();
+    runTranslate();
   </script>
 </body>
 </html>
