@@ -5,97 +5,123 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>English → Conlang Dictionary</title>
   <style>
+    /* Clean + basic */
     :root { color-scheme: dark; }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 24px; background:#0b0f17; color:#e8eefc; }
-    h1 { margin: 0 0 10px; font-size: 22px; }
-    .sub { opacity: .8; margin: 0 0 18px; }
-    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom: 14px; }
-    input, select, button { background:#121a2a; color:#e8eefc; border:1px solid #24314d; border-radius:10px; padding:10px 12px; font-size:14px; }
-    input { flex: 1 1 260px; }
-    button { cursor:pointer; }
-    button:hover { border-color:#3b4f7f; }
-    .card { background:#0f1626; border:1px solid #24314d; border-radius:14px; padding:14px; margin-top: 14px; }
-    table { width:100%; border-collapse: collapse; }
-    th, td { text-align:left; padding:10px 8px; border-bottom:1px solid #1f2b44; vertical-align:top; }
-    th { font-size:12px; letter-spacing:.08em; text-transform:uppercase; opacity:.8; }
-    .pill { display:inline-block; padding:2px 10px; border:1px solid #2a3a5e; border-radius:999px; font-size:12px; opacity:.9; }
-    .muted { opacity:.75; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-    .footer { margin-top:14px; opacity:.7; font-size:12px; }
-    .right { text-align:right; }
-    .tiny { font-size:12px; opacity:.8; }
+    body{
+      margin:0; padding:20px;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:#0b0f17; color:#e8eefc;
+    }
+    h1{ margin:0 0 6px; font-size:20px; }
+    .sub{ margin:0 0 14px; opacity:.75; font-size:13px; }
+
+    .bar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin: 0 0 14px; }
+    input, select, button{
+      background:#0f1626; color:#e8eefc;
+      border:1px solid #22314f; border-radius:10px;
+      padding:10px 12px; font-size:14px;
+    }
+    input{ flex:1 1 280px; }
+    button{ cursor:pointer; }
+    button:hover{ border-color:#3a5488; }
+
+    .meta{ font-size:12px; opacity:.75; margin-bottom:10px; }
+
+    /* Table */
+    .wrap{
+      border:1px solid #22314f; border-radius:12px;
+      overflow:hidden; background:#0f1626;
+    }
+    table{ width:100%; border-collapse:collapse; }
+    thead th{
+      text-align:left; font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+      padding:12px 12px; background:#0d1423; border-bottom:1px solid #22314f;
+      opacity:.85;
+    }
+    tbody td{
+      padding:12px 12px; border-bottom:1px solid #1b2944; vertical-align:top;
+      font-size:14px;
+    }
+    tbody tr:last-child td{ border-bottom:none; }
+
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .muted{ opacity:.75; }
+    .right{ text-align:right; }
+
+    /* Small screens: keep it readable */
+    @media (max-width: 560px){
+      thead{ display:none; }
+      table, tbody, tr, td{ display:block; width:100%; }
+      tbody tr{ border-bottom:1px solid #22314f; }
+      tbody tr:last-child{ border-bottom:none; }
+      tbody td{ border-bottom:none; padding:10px 12px; }
+      tbody td[data-label]::before{
+        content: attr(data-label);
+        display:block; font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+        opacity:.65; margin-bottom:4px;
+      }
+    }
   </style>
 </head>
 <body>
   <h1>Dictionary (English → Conlang)</h1>
-  <p class="sub">Not a translator. Just a searchable, alphabetical lexicon.</p>
+  <p class="sub">Simple list. Searchable. Keeps notes. Sorted A→Z by English.</p>
 
-  <div class="row">
-    <input id="q" type="search" placeholder="Search English (e.g., 'sleep') or conlang (e.g., 'nna')" autocomplete="off" />
+  <div class="bar">
+    <input id="q" type="search" placeholder="Search (English or conlang)…" autocomplete="off" />
     <select id="mode" aria-label="Search mode">
-      <option value="both" selected>Search: English + Conlang</option>
-      <option value="en">Search: English only</option>
-      <option value="cl">Search: Conlang only</option>
+      <option value="both" selected>English + Conlang</option>
+      <option value="en">English only</option>
+      <option value="cl">Conlang only</option>
+      <option value="notes">Notes only</option>
     </select>
-    <button id="clear">Clear</button>
+    <button id="clear" type="button">Clear</button>
   </div>
 
-  <div class="row">
-    <span class="pill">Sorted by: <span class="mono">English (A→Z)</span></span>
-    <span class="pill">Entries: <span id="count" class="mono">0</span></span>
-    <span class="pill">Showing: <span id="showing" class="mono">0</span></span>
+  <div class="meta">
+    Entries: <span id="count" class="mono">0</span> • Showing: <span id="showing" class="mono">0</span>
   </div>
 
-  <div class="card">
+  <div class="wrap">
     <table>
       <thead>
         <tr>
-          <th style="width:35%;">English</th>
-          <th style="width:20%;">Conlang</th>
+          <th style="width:36%;">English</th>
+          <th style="width:18%;">Conlang</th>
           <th>Notes</th>
-          <th class="right" style="width:15%;">Tags</th>
         </tr>
       </thead>
       <tbody id="rows"></tbody>
     </table>
-    <div class="footer tiny">
-      Edit the <span class="mono">LEXICON</span> array in the code to add words (keep English A→Z).
-    </div>
   </div>
 
 <script>
-  // ✅ Dictionary data (English alphabetical). Edit/add entries here.
-  // Fields:
-  //  - en: English headword (used for sorting)
-  //  - cl: conlang word
-  //  - notes: optional clarifications / usage
-  //  - tags: array of categories
+  // Edit this list. Keep English in any order—code sorts it A→Z automatically.
   const LEXICON = [
-    { en: "after",  cl: "nra", notes: "", tags: ["time"] },
-    { en: "and",    cl: "sap", notes: "Connector / conjunction.", tags: ["connector"] },
-    { en: "bed",    cl: "ga",  notes: "", tags: ["object"] },
-    { en: "before", cl: "poi", notes: "", tags: ["time"] },
-    { en: "become / get", cl: "pwe", notes: "State-change verb.", tags: ["verb"] },
-    { en: "dream",  cl: "nme", notes: "Can be used as verb or concept.", tags: ["mental"] },
-    { en: "good",   cl: "ka",  notes: "", tags: ["state"] },
-    { en: "he / she", cl: "ua", notes: "3rd person singular.", tags: ["pronoun"] },
-    { en: "I / me", cl: "owa", notes: "1st person singular.", tags: ["pronoun"] },
-    { en: "lay down", cl: "kwo", notes: "Verb.", tags: ["verb"] },
-    { en: "night",  cl: "a",   notes: "", tags: ["time"] },
-    { en: "no / not / negative", cl: "noa", notes: "Negation marker.", tags: ["grammar"] },
-    { en: "pillow", cl: "teq", notes: "Pronounced 'tek'.", tags: ["object"] },
-    { en: "question marker", cl: "uta", notes: "Sentence-final question particle.", tags: ["grammar"] },
-    { en: "sleep",  cl: "nna", notes: "Verb.", tags: ["verb"] },
-    { en: "they / you all", cl: "ena", notes: "Plural 3rd person / 'you all'.", tags: ["pronoun"] },
-    { en: "tired",  cl: "jna", notes: "", tags: ["state"] },
-    { en: "today",  cl: "ani", notes: "", tags: ["time"] },
-    { en: "wake up", cl: "ba", notes: "Verb.", tags: ["verb"] },
-    { en: "we",     cl: "vja", notes: "1st person plural.", tags: ["pronoun"] },
-    { en: "wish",   cl: "lno", notes: "Verb.", tags: ["verb"] },
-    { en: "you",    cl: "ma",  notes: "2nd person singular.", tags: ["pronoun"] },
+    { en: "after",  cl: "nra", notes: "" },
+    { en: "and",    cl: "sap", notes: "Connector / conjunction." },
+    { en: "bed",    cl: "ga",  notes: "" },
+    { en: "before", cl: "poi", notes: "" },
+    { en: "become / get", cl: "pwe", notes: "State-change verb." },
+    { en: "dream",  cl: "nme", notes: "Can be used as verb or concept." },
+    { en: "good",   cl: "ka",  notes: "" },
+    { en: "he / she", cl: "ua", notes: "3rd person singular." },
+    { en: "I / me", cl: "owa", notes: "1st person singular." },
+    { en: "lay down", cl: "kwo", notes: "Verb." },
+    { en: "night",  cl: "a",   notes: "" },
+    { en: "no / not / negative", cl: "noa", notes: "Negation marker." },
+    { en: "pillow", cl: "teq", notes: "Pronounced 'tek'." },
+    { en: "question marker", cl: "uta", notes: "Sentence-final question particle." },
+    { en: "sleep",  cl: "nna", notes: "Verb." },
+    { en: "they / you all", cl: "ena", notes: "Plural 3rd person / 'you all'." },
+    { en: "tired",  cl: "jna", notes: "" },
+    { en: "today",  cl: "ani", notes: "" },
+    { en: "wake up", cl: "ba", notes: "Verb." },
+    { en: "we",     cl: "vja", notes: "1st person plural." },
+    { en: "wish",   cl: "lno", notes: "Verb." },
+    { en: "you",    cl: "ma",  notes: "2nd person singular." }
   ];
 
-  // --- App code (no frameworks) ---
   const q = document.getElementById("q");
   const mode = document.getElementById("mode");
   const clearBtn = document.getElementById("clear");
@@ -103,69 +129,44 @@
   const countEl = document.getElementById("count");
   const showingEl = document.getElementById("showing");
 
-  function normalize(s) {
-    return (s ?? "")
-      .toString()
-      .trim()
-      .toLowerCase();
-  }
+  const esc = (s) => (s ?? "").toString()
+    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
 
-  function escapeHtml(str) {
-    return (str ?? "").toString()
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
+  const norm = (s) => (s ?? "").toString().trim().toLowerCase();
 
-  function sortLexicon(list) {
-    return [...list].sort((a,b) => a.en.localeCompare(b.en, "en", { sensitivity: "base" }));
-  }
+  const sorted = [...LEXICON].sort((a,b) => a.en.localeCompare(b.en, "en", { sensitivity:"base" }));
+  countEl.textContent = String(sorted.length);
 
-  function matches(entry, query, searchMode) {
+  function match(entry, query, m){
     if (!query) return true;
-    const en = normalize(entry.en);
-    const cl = normalize(entry.cl);
-    const notes = normalize(entry.notes);
-    const tags = normalize((entry.tags || []).join(" "));
-    if (searchMode === "en") return en.includes(query);
-    if (searchMode === "cl") return cl.includes(query);
-    // both:
-    return en.includes(query) || cl.includes(query) || notes.includes(query) || tags.includes(query);
+    const EN = norm(entry.en), CL = norm(entry.cl), NO = norm(entry.notes);
+    if (m === "en") return EN.includes(query);
+    if (m === "cl") return CL.includes(query);
+    if (m === "notes") return NO.includes(query);
+    return EN.includes(query) || CL.includes(query) || NO.includes(query);
   }
 
-  function render(list) {
-    rowsEl.innerHTML = "";
+  function render(list){
     showingEl.textContent = String(list.length);
-
-    if (list.length === 0) {
-      rowsEl.innerHTML = `<tr><td colspan="4" class="muted">No matches.</td></tr>`;
+    if (!list.length){
+      rowsEl.innerHTML = `<tr><td colspan="3" class="muted">No matches.</td></tr>`;
       return;
     }
 
-    for (const e of list) {
-      const tags = (e.tags || []).map(t => `<span class="pill mono">${escapeHtml(t)}</span>`).join(" ");
-      rowsEl.insertAdjacentHTML("beforeend", `
-        <tr>
-          <td><span class="mono">${escapeHtml(e.en)}</span></td>
-          <td><span class="mono"><strong>${escapeHtml(e.cl)}</strong></span></td>
-          <td class="muted">${escapeHtml(e.notes || "")}</td>
-          <td class="right">${tags}</td>
-        </tr>
-      `);
-    }
+    rowsEl.innerHTML = list.map(e => `
+      <tr>
+        <td data-label="English"><span class="mono">${esc(e.en)}</span></td>
+        <td data-label="Conlang"><span class="mono"><strong>${esc(e.cl)}</strong></span></td>
+        <td data-label="Notes" class="muted">${esc(e.notes || "")}</td>
+      </tr>
+    `).join("");
   }
 
-  const sorted = sortLexicon(LEXICON);
-  countEl.textContent = String(sorted.length);
-  render(sorted);
-
-  function update() {
-    const query = normalize(q.value);
+  function update(){
+    const query = norm(q.value);
     const m = mode.value;
-    const filtered = sorted.filter(e => matches(e, query, m));
-    render(filtered);
+    render(sorted.filter(e => match(e, query, m)));
   }
 
   q.addEventListener("input", update);
@@ -176,6 +177,8 @@
     update();
     q.focus();
   });
+
+  render(sorted);
 </script>
 </body>
 </html>
