@@ -1,492 +1,525 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ALA-AY Translator</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Elefen Lector — Tap to Define</title>
   <style>
-    :root{
-      --bg: #0b1220;
-      --card: rgba(255,255,255,0.06);
-      --card2: rgba(255,255,255,0.08);
-      --text: rgba(255,255,255,0.92);
-      --muted: rgba(255,255,255,0.70);
-      --muted2: rgba(255,255,255,0.55);
-      --border: rgba(255,255,255,0.14);
-      --shadow: 0 18px 60px rgba(0,0,0,0.35);
-      --radius: 18px;
-      --radius2: 14px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-      --accent: #7dd3fc; /* no hard requirement; just a nice glow */
-      --accent2: #a78bfa;
-      --ok: #86efac;
-      --warn: #fbbf24;
+    :root {
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --highlight: #38bdf8;
+      --highlight-bg: rgba(56, 189, 248, 0.18);
     }
 
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
-    body{
-      margin:0;
-      font-family: var(--sans);
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
       color: var(--text);
-      background:
-        radial-gradient(1200px 800px at 20% 10%, rgba(125,211,252,0.18), transparent 55%),
-        radial-gradient(900px 700px at 80% 25%, rgba(167,139,250,0.16), transparent 55%),
-        radial-gradient(800px 700px at 45% 90%, rgba(34,197,94,0.12), transparent 60%),
-        var(--bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 16px 120px 16px;
     }
 
-    .wrap{
-      max-width: 1080px;
-      margin: 0 auto;
-      padding: 28px 18px 44px;
-    }
-
-    header{
-      display:flex;
-      gap:14px;
-      align-items:flex-start;
-      justify-content:space-between;
-      flex-wrap:wrap;
-      margin-bottom: 18px;
-    }
-
-    .title{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      min-width: 260px;
-    }
-
-    .title h1{
-      margin:0;
-      font-size: 26px;
-      letter-spacing: 0.2px;
-      line-height: 1.15;
-    }
-
-    .title p{
-      margin:0;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.45;
-      max-width: 66ch;
-    }
-
-    .chiprow{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-      justify-content:flex-end;
-    }
-
-    .chip{
-      padding: 8px 10px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.04);
-      border-radius: 999px;
-      font-size: 12px;
-      color: var(--muted);
-      backdrop-filter: blur(10px);
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
+    .app-container {
+      width: 100%;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
       gap: 16px;
     }
 
-    @media (max-width: 900px){
-      .grid{ grid-template-columns: 1fr; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 2px;
     }
 
-    .card{
-      background: var(--card);
+    .header-title h1 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .header-title span {
+      color: var(--highlight);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .story-selector {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+
+    .story-selector::-webkit-scrollbar {
+      display: none;
+    }
+
+    .story-tab {
+      background-color: var(--panel);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      backdrop-filter: blur(14px);
-    }
-
-    .cardHead{
-      padding: 14px 14px 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.10);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-    }
-
-    .cardHead .label{
-      font-weight: 650;
-      font-size: 13px;
-      letter-spacing: 0.2px;
-      color: rgba(255,255,255,0.88);
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
-
-    .badge{
-      font-family: var(--mono);
-      font-size: 11px;
-      padding: 4px 8px;
+      color: var(--text-muted);
+      padding: 8px 14px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(0,0,0,0.10);
-      color: rgba(255,255,255,0.75);
-      white-space:nowrap;
+      font-size: 0.78rem;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
     }
 
-    textarea{
-      width: 100%;
-      min-height: 260px;
-      padding: 14px;
-      border: 0;
-      outline: none;
-      resize: vertical;
-      background: transparent;
-      color: var(--text);
-      font-size: 15px;
-      line-height: 1.55;
+    .story-tab.active {
+      background-color: var(--primary);
+      border-color: var(--highlight);
+      color: #ffffff;
     }
 
-    .toolbar{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      padding: 12px 14px 14px;
-      border-top: 1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.10);
+    .reader-card {
+      background-color: #ffffff;
+      color: #0f172a;
+      border-radius: 24px;
+      padding: 24px 20px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
     }
 
-    .btn{
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.06);
-      color: var(--text);
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-size: 13px;
-      cursor:pointer;
-      transition: transform 0.06s ease, background 0.15s ease, border-color 0.15s ease;
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      user-select:none;
-    }
-    .btn:hover{ background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.26); }
-    .btn:active{ transform: translateY(1px); }
-
-    .btn.primary{
-      background: linear-gradient(135deg, rgba(125,211,252,0.16), rgba(167,139,250,0.14));
-      border-color: rgba(125,211,252,0.38);
+    .story-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
     }
 
-    .btn.good{
-      border-color: rgba(134,239,172,0.35);
-      background: rgba(134,239,172,0.10);
+    .story-tag {
+      background-color: #e0f2fe;
+      color: #0369a1;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 6px;
     }
 
-    .btn.warn{
-      border-color: rgba(251,191,36,0.35);
-      background: rgba(251,191,36,0.10);
+    .story-hint {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #64748b;
     }
 
-    .row{
-      display:flex;
-      gap:12px;
-      align-items:center;
-      flex-wrap:wrap;
+    .story-title {
+      font-size: 1.4rem;
+      font-weight: 900;
+      line-height: 1.25;
+      margin-bottom: 18px;
+      color: #0b2545;
     }
 
-    .toggle{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      color: var(--muted);
-      font-size: 13px;
-      padding: 8px 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(255,255,255,0.04);
+    .story-content {
+      font-size: 1.15rem;
+      line-height: 1.85;
+      font-family: -apple-system, BlinkMacSystemFont, "Georgia", serif;
+      color: #1e293b;
     }
 
-    input[type="checkbox"]{
-      width: 18px;
-      height: 18px;
-      accent-color: #7dd3fc;
+    .word {
+      cursor: pointer;
+      padding: 2px 3px;
+      margin: 0 -1px;
+      border-radius: 4px;
+      transition: background-color 0.15s, color 0.15s;
     }
 
-    .rules{
-      margin-top: 16px;
-      padding: 14px 14px 16px;
-      border-radius: var(--radius);
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(255,255,255,0.04);
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.55;
+    .word:hover {
+      background-color: #e2e8f0;
     }
 
-    code.k{
-      font-family: var(--mono);
-      background: rgba(0,0,0,0.18);
-      border: 1px solid rgba(255,255,255,0.14);
-      padding: 2px 6px;
-      border-radius: 8px;
-      color: rgba(255,255,255,0.88);
-      white-space:nowrap;
+    .word.selected {
+      background-color: #0284c7;
+      color: #ffffff !important;
+      font-weight: 600;
     }
 
-    .toast{
+    .translation-box {
+      margin-top: 24px;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 16px;
+    }
+
+    .translation-toggle {
+      background: none;
+      border: none;
+      color: #0284c7;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .translation-text {
+      display: none;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #64748b;
+      margin-top: 10px;
+      font-style: italic;
+    }
+
+    #definition-sheet {
       position: fixed;
+      bottom: 16px;
       left: 50%;
-      bottom: 18px;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.75);
-      border: 1px solid rgba(255,255,255,0.18);
-      color: rgba(255,255,255,0.90);
-      padding: 10px 12px;
-      border-radius: 999px;
-      font-size: 13px;
-      opacity: 0;
-      pointer-events:none;
-      transition: opacity 0.16s ease, transform 0.16s ease;
-      backdrop-filter: blur(10px);
+      transform: translateX(-50%) translateY(150%);
+      width: calc(100% - 32px);
+      max-width: 440px;
+      background: #1e293b;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 16px 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 100;
     }
-    .toast.show{
-      opacity: 1;
-      transform: translateX(-50%) translateY(-2px);
+
+    #definition-sheet.visible {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+
+    .sheet-word {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #ffffff;
+    }
+
+    .sheet-pos {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--highlight);
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-left: 8px;
+    }
+
+    .sheet-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+
+    .sheet-def {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-bottom: 4px;
+    }
+
+    .sheet-note {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-style: italic;
     }
   </style>
 </head>
-
 <body>
-  <div class="wrap">
+
+  <div class="app-container">
     <header>
-      <div class="title">
-        <h1>ALA-AY Translator</h1>
-        <p>
-          Deterministic translator using your canon rules:
-          vowels <code class="k">AEIOU</code>, <code class="k">Y</code> is always a consonant,
-          initial consonant cluster <code class="k">C</code> wraps the word as
-          <code class="k">C + ala + word + C + ay</code>.
-          Vowel-start words become <code class="k">word + lay</code>.
-        </p>
-      </div>
-      <div class="chiprow">
-        <div class="chip">Punctuation preserved</div>
-        <div class="chip">Case preserved</div>
-        <div class="chip">Cluster-aware</div>
+      <div class="header-title">
+        <h1>Elefen Lector</h1>
+        <span>Tap any word to translate</span>
       </div>
     </header>
 
-    <div class="grid">
-      <section class="card">
-        <div class="cardHead">
-          <div class="label">Input</div>
-          <span class="badge">English → ALA-AY</span>
-        </div>
-        <textarea id="input" spellcheck="false" placeholder="Type or paste text here...&#10;&#10;Example: The boy is playing basketball."></textarea>
-        <div class="toolbar">
-          <button class="btn primary" id="btnTranslate">Translate</button>
-          <button class="btn" id="btnSwap">Swap</button>
-          <button class="btn warn" id="btnClear">Clear</button>
-          <div class="row" style="margin-left:auto;">
-            <label class="toggle" title="Optional legacy rule from earlier ALA-AY versions">
-              <input type="checkbox" id="keepI" checked />
-              Keep “I” unchanged
-            </label>
-          </div>
-        </div>
-      </section>
+    <div class="story-selector" id="story-tabs"></div>
 
-      <section class="card">
-        <div class="cardHead">
-          <div class="label">Output</div>
-          <span class="badge">ALA-AY</span>
-        </div>
-        <textarea id="output" spellcheck="false" placeholder="Translation appears here..." readonly></textarea>
-        <div class="toolbar">
-          <button class="btn good" id="btnCopy">Copy Output</button>
-          <button class="btn" id="btnExample1">Example</button>
-          <button class="btn" id="btnExample2">Example 2</button>
-        </div>
-      </section>
-    </div>
+    <div class="reader-card">
+      <div class="story-meta">
+        <span class="story-tag" id="story-category">CONTO</span>
+        <span class="story-hint">👆 Toce un parola</span>
+      </div>
+      <h2 class="story-title" id="story-title"></h2>
+      <div class="story-content" id="story-body"></div>
 
-    <div class="rules">
-      <strong>Canon rules (locked):</strong><br/>
-      1) Vowels are <code class="k">A E I O U</code>. <code class="k">Y</code> is always a consonant.<br/>
-      2) Let <code class="k">C</code> be the initial consonant cluster (all starting consonants up to first vowel).<br/>
-      3) If word starts with vowel → <code class="k">word + lay</code>.<br/>
-      4) If word starts with cluster <code class="k">C</code> → <code class="k">C + ala + word + C + ay</code>.<br/>
-      5) Punctuation + spacing preserved; case preserved (lower / Title / ALL CAPS).
+      <div class="translation-box">
+        <button class="translation-toggle" id="toggle-translation">
+          <span>📖 Mostra tradui completa</span>
+        </button>
+        <div class="translation-text" id="story-translation"></div>
+      </div>
     </div>
   </div>
 
-  <div class="toast" id="toast">Copied!</div>
+  <div id="definition-sheet">
+    <div class="sheet-header">
+      <div>
+        <span class="sheet-word" id="def-word">Parola</span>
+        <span class="sheet-pos" id="def-pos">POS</span>
+      </div>
+      <button class="sheet-close" id="close-sheet">✕</button>
+    </div>
+    <div class="sheet-def" id="def-meaning">English translation goes here.</div>
+    <div class="sheet-note" id="def-note">Example note.</div>
+  </div>
 
   <script>
-    const VOWELS = new Set(["a","e","i","o","u"]); // y is always consonant
+    const DICTIONARY = {
+      "un": { def: "a, an, one", pos: "article" },
+      "viajor": { def: "traveler", pos: "noun" },
+      "joven": { def: "young", pos: "adj" },
+      "ia": { def: "[past tense marker]", pos: "particle", note: "Shows past action: 'ia ariva' = arrived" },
+      "ariva": { def: "to arrive", pos: "verb" },
+      "a": { def: "at, to", pos: "prep" },
+      "la": { def: "the", pos: "article" },
+      "sera": { def: "evening", pos: "noun" },
+      "sol": { def: "sun", pos: "noun" },
+      "reposa": { def: "to rest, set", pos: "verb" },
+      "sur": { def: "on, upon", pos: "prep" },
+      "mar": { def: "sea, ocean", pos: "noun" },
+      "briliante": { def: "shining, brilliant", pos: "adj" },
+      "e": { def: "and", pos: "conj" },
+      "aira": { def: "air, breeze", pos: "noun" },
+      "es": { def: "to be (is, are, was)", pos: "verb" },
+      "dulse": { def: "sweet, gentle", pos: "adj" },
+      "calma": { def: "calm, quiet", pos: "adj" },
+      "el": { def: "he, she, it (person)", pos: "pronoun" },
+      "pasea": { def: "to stroll, walk", pos: "verb" },
+      "tra": { def: "through, across", pos: "prep" },
+      "stradas": { def: "streets (plural)", pos: "noun", note: "Root: strada" },
+      "strada": { def: "street, road", pos: "noun" },
+      "de": { def: "of, from", pos: "prep" },
+      "petra": { def: "stone, rock", pos: "noun" },
+      "regardante": { def: "watching, looking at", pos: "participle", note: "regarda + -nte" },
+      "regarda": { def: "to look at, watch", pos: "verb" },
+      "cafes": { def: "cafés (plural)", pos: "noun" },
+      "plen": { def: "full", pos: "adj" },
+      "persones": { def: "people, persons", pos: "noun" },
+      "ci": { def: "who, which", pos: "pronoun" },
+      "parla": { def: "to talk, speak", pos: "verb" },
+      "ridi": { def: "to laugh", pos: "verb" },
+      "con": { def: "with", pos: "prep" },
+      "joia": { def: "joy, delight", pos: "noun" },
+      "pronto": { def: "soon, quickly", pos: "adv" },
+      "trova": { def: "to find, discover", pos: "verb" },
+      "libreria": { def: "bookstore, library", pos: "noun" },
+      "vea": { def: "old, ancient", pos: "adj" },
+      "sinia": { def: "sign, signal", pos: "noun" },
+      "lenio": { def: "wood", pos: "noun" },
+      "libres": { def: "books (plural)", pos: "noun" },
+      "libre": { def: "book", pos: "noun" },
+      "cuando": { def: "when", pos: "conj" },
+      "entra": { def: "to enter", pos: "verb" },
+      "gato": { def: "cat", pos: "noun" },
+      "gris": { def: "gray", pos: "adj" },
+      "saluta": { def: "to greet, salute", pos: "verb" },
+      "miaula": { def: "meow", pos: "noun" },
+      "porto": { def: "port, harbor", pos: "noun" },
+      "elefen": { def: "Lingua Franca Nova", pos: "proper noun" },
+      "santos": { def: "Santos (city)", pos: "proper noun" },
+      "autovia": { def: "highway, motorway", pos: "noun" },
+      "entre": { def: "between, among", pos: "prep" },
+      "tempo": { def: "weather, time", pos: "noun" },
+      "bon": { def: "good", pos: "adj" },
+      "dia": { def: "day", pos: "noun" },
+      "doman": { def: "tomorrow", pos: "adv" },
+      "va": { def: "[future tense marker]", pos: "particle", note: "Shows future action: 'va es' = will be" },
+      "transmeteda": { def: "broadcasted, transmitted", pos: "adj / part" },
+      "par": { def: "by", pos: "prep" },
+      "canal": { def: "channel, canal", pos: "noun" },
+      "lago": { def: "lake", pos: "noun" },
+      "serena": { def: "serene, peaceful", pos: "adj" },
+      "fronti": { def: "to face, confront", pos: "verb" },
+      "sportal": { def: "sporting, athletic", pos: "adj" }
+    };
 
-    function detectCaseStyle(word) {
-      // Only letters considered for case style.
-      const letters = word.replace(/[^A-Za-z]/g, "");
-      if (!letters) return "none";
-      if (letters === letters.toUpperCase()) return "upper";
-      if (letters === letters.toLowerCase()) return "lower";
-      // Title case = first letter uppercase, rest lowercase (letters only)
-      const first = letters[0];
-      const rest = letters.slice(1);
-      if (first === first.toUpperCase() && rest === rest.toLowerCase()) return "title";
-      return "mixed";
-    }
-
-    function applyCaseStyle(text, style) {
-      if (style === "upper") return text.toUpperCase();
-      if (style === "lower") return text.toLowerCase();
-      if (style === "title") {
-        const lower = text.toLowerCase();
-        return lower.charAt(0).toUpperCase() + lower.slice(1);
+    const STORIES = [
+      {
+        id: "libreria",
+        tab: "La Libreria Vea",
+        category: "CONTO",
+        title: "La Libreria Vea en Porto de Elefen",
+        text: "Un viajor joven ia ariva a Porto de Elefen a la sera. La sol ia reposa sur la mar briliante, e la aira ia es dulse e calma. El ia pasea tra la stradas de petra, regardante la cafes plen de persones ci ia parla e ridi con joia. Pronto, el ia trova un libreria vea con un sinia de lenio: Libres de la Mar. Cuando el ia entra, un gato gris ia saluta el con un miaula dulse.",
+        translation: "A young traveler arrived in Porto de Elefen in the evening. The sun was resting on the shining sea, and the air was sweet and calm. He strolled through the stone streets, watching the cafés full of people who were talking and laughing with joy. Soon, he found an old bookstore with a wooden sign: 'Books of the Sea'. When he entered, a gray cat greeted him with a gentle meow."
+      },
+      {
+        id: "matce",
+        tab: "La Partico Grande",
+        category: "SPORTE",
+        title: "La Partico entre Porto e Lago Serena",
+        text: "Porto de Elefen va fronti Lago Serena doman a la sera. La evento va es transmeteda par Canal 26 Elefen. Tota la persones en la site parla con joia sur la juores e la stadion nova.",
+        translation: "Porto de Elefen will face Lago Serena tomorrow in the evening. The event will be broadcasted by Canal 26 Elefen. All the people in the city are talking with joy about the players and the new stadium."
       }
-      return text; // mixed/none: leave as produced
+    ];
+
+    let currentStoryIndex = 0;
+    let selectedWordSpan = null;
+
+    const storyTabsContainer = document.getElementById('story-tabs');
+    const storyCategory = document.getElementById('story-category');
+    const storyTitle = document.getElementById('story-title');
+    const storyBody = document.getElementById('story-body');
+    const storyTranslation = document.getElementById('story-translation');
+    const toggleTranslationBtn = document.getElementById('toggle-translation');
+
+    const defSheet = document.getElementById('definition-sheet');
+    const defWord = document.getElementById('def-word');
+    const defPos = document.getElementById('def-pos');
+    const defMeaning = document.getElementById('def-meaning');
+    const defNote = document.getElementById('def-note');
+    const closeSheetBtn = document.getElementById('close-sheet');
+
+    function initTabs() {
+      storyTabsContainer.innerHTML = '';
+      STORIES.forEach((story, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `story-tab ${idx === currentStoryIndex ? 'active' : ''}`;
+        btn.textContent = story.tab;
+        btn.addEventListener('click', () => loadStory(idx));
+        storyTabsContainer.appendChild(btn);
+      });
     }
 
-    function splitPunctuation(token) {
-      // Preserve leading/trailing non-letters (keeps quotes, parentheses, commas, etc.)
-      // Keep internal apostrophes/hyphens as part of the word body.
-      const m = token.match(/^([^A-Za-z]*)([A-Za-z][A-Za-z'’-]*)([^A-Za-z]*)$/);
-      if (!m) return null;
-      return { lead: m[1], core: m[2], trail: m[3] };
+    function renderInteractiveText(text) {
+      const tokens = text.split(/([a-zA-ZÀ-ÿ0-9_]+)/);
+      const frag = document.createDocumentFragment();
+
+      tokens.forEach(token => {
+        if (/^[a-zA-ZÀ-ÿ0-9_]+$/.test(token)) {
+          const span = document.createElement('span');
+          span.className = 'word';
+          span.textContent = token;
+          span.setAttribute('data-clean', token.toLowerCase());
+          span.addEventListener('click', (e) => handleWordClick(e, span, token));
+          frag.appendChild(span);
+        } else {
+          frag.appendChild(document.createTextNode(token));
+        }
+      });
+
+      return frag;
     }
 
-    function initialClusterLower(coreLower) {
-      // cluster = all starting consonant letters before first vowel (AEIOU), y is consonant.
-      let i = 0;
-      while (i < coreLower.length) {
-        const ch = coreLower[i];
-        if (!/[a-z]/.test(ch)) break; // safety
-        if (VOWELS.has(ch)) break;
-        i++;
+    function loadStory(idx) {
+      currentStoryIndex = idx;
+      const story = STORIES[idx];
+
+      document.querySelectorAll('.story-tab').forEach((tab, i) => {
+        tab.classList.toggle('active', i === idx);
+      });
+
+      storyCategory.textContent = story.category;
+      storyTitle.textContent = story.title;
+      storyBody.innerHTML = '';
+      storyBody.appendChild(renderInteractiveText(story.text));
+      storyTranslation.textContent = story.translation;
+      storyTranslation.style.display = 'none';
+      toggleTranslationBtn.querySelector('span').textContent = '📖 Mostra tradui completa';
+
+      hideDefinition();
+    }
+
+    function handleWordClick(e, span, rawWord) {
+      if (selectedWordSpan) {
+        selectedWordSpan.classList.remove('selected');
       }
 
-      // OPTION A FIX (vowelless fallback):
-      // If there is no AEIOU anywhere in the word, don't let the cluster swallow the whole word.
-      // Instead, use only the initial consonant cluster (same scan) BUT capped so that at least
-      // one character remains in the word body.
-      if (i === coreLower.length) {
-        if (coreLower.length <= 1) return coreLower; // single-letter word: keep as cluster
-        return coreLower.slice(0, coreLower.length - 1); // keep last char as body (e.g., thy -> th, gym -> g)
-      }
+      selectedWordSpan = span;
+      selectedWordSpan.classList.add('selected');
 
-      return coreLower.slice(0, i); // could be "" if starts with vowel
+      const cleanWord = rawWord.toLowerCase();
+      lookupWord(cleanWord, rawWord);
     }
 
-    function translateWordALAAY(core, keepI) {
-      // core is letters + optional apostrophes
-      if (!core) return core;
+    function lookupWord(clean, original) {
+      let entry = DICTIONARY[clean];
 
-      // Optional: keep "I" unchanged (legacy rule)
-      if (keepI && core === "I") return core;
-      if (keepI && core === "i") return core;
+      if (!entry && clean.endsWith('s')) {
+        const singular = clean.slice(0, -1);
+        if (DICTIONARY[singular]) {
+          entry = {
+            ...DICTIONARY[singular],
+            def: DICTIONARY[singular].def + " (plural)",
+            note: "Plural form of '" + singular + "'"
+          };
+        }
+      }
 
-      const style = detectCaseStyle(core);
-      const lowerCore = core.toLowerCase();
+      defWord.textContent = original;
 
-      const cluster = initialClusterLower(lowerCore);
-
-      let outLower;
-      if (cluster.length === 0) {
-        // vowel-start
-        outLower = lowerCore + "lay";
+      if (entry) {
+        defPos.textContent = entry.pos || 'VOCAB';
+        defPos.style.display = 'inline-block';
+        defMeaning.textContent = entry.def;
+        defNote.textContent = entry.note || '';
+        defNote.style.display = entry.note ? 'block' : 'none';
       } else {
-        outLower = cluster + "ala" + lowerCore + cluster + "ay";
+        defPos.style.display = 'none';
+        defMeaning.textContent = 'Definition not in quick dictionary.';
+        defNote.textContent = 'Tap another word or add this to your dictionary list.';
+        defNote.style.display = 'block';
       }
 
-      return applyCaseStyle(outLower, style);
+      defSheet.classList.add('visible');
     }
 
-    function translateTextALAAY(text, keepI) {
-      // Tokenize by whitespace while preserving whitespace exactly
-      const parts = text.split(/(\s+)/);
-
-      return parts.map(part => {
-        if (/^\s+$/.test(part) || part === "") return part;
-
-        // Attempt to split punctuation/core/trailing
-        const s = splitPunctuation(part);
-        if (!s) return part; // leave unchanged if it doesn't fit pattern
-
-        const translated = translateWordALAAY(s.core, keepI);
-        return s.lead + translated + s.trail;
-      }).join("");
+    function hideDefinition() {
+      defSheet.classList.remove('visible');
+      if (selectedWordSpan) {
+        selectedWordSpan.classList.remove('selected');
+        selectedWordSpan = null;
+      }
     }
 
-    function showToast(msg) {
-      const t = document.getElementById("toast");
-      t.textContent = msg;
-      t.classList.add("show");
-      setTimeout(() => t.classList.remove("show"), 900);
-    }
+    closeSheetBtn.addEventListener('click', hideDefinition);
 
-    // UI wiring
-    const input = document.getElementById("input");
-    const output = document.getElementById("output");
-    const keepI = document.getElementById("keepI");
-
-    document.getElementById("btnTranslate").addEventListener("click", () => {
-      output.value = translateTextALAAY(input.value, keepI.checked);
+    toggleTranslationBtn.addEventListener('click', () => {
+      const isHidden = storyTranslation.style.display === 'none';
+      storyTranslation.style.display = isHidden ? 'block' : 'none';
+      toggleTranslationBtn.querySelector('span').textContent = isHidden ? '✕ Asconde tradui' : '📖 Mostra tradui completa';
     });
 
-    document.getElementById("btnSwap").addEventListener("click", () => {
-      const a = input.value;
-      input.value = output.value;
-      output.value = a;
-    });
-
-    document.getElementById("btnClear").addEventListener("click", () => {
-      input.value = "";
-      output.value = "";
-      input.focus();
-    });
-
-    document.getElementById("btnCopy").addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(output.value || "");
-        showToast("Copied output");
-      } catch {
-        // fallback
-        output.select();
-        document.execCommand("copy");
-        showToast("Copied output");
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.word') && !e.target.closest('#definition-sheet')) {
+        hideDefinition();
       }
     });
 
-    document.getElementById("btnExample1").addEventListener("click", () => {
-      input.value = "The boy is playing basketball.";
-      output.value = translateTextALAAY(input.value, keepI.checked);
-    });
-
-    document.getElementById("btnExample2").addEventListener("click", () => {
-      input.value = "Three schools, yellow bikes, and a quick fox!";
-      output.value = translateTextALAAY(input.value, keepI.checked);
-    });
-
-    // Live translate (nice UX): update output as you type
-    let timer = null;
-    input.addEventListener("input", () => {
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        output.value = translateTextALAAY(input.value, keepI.checked);
-      }, 120);
-    });
-    keepI.addEventListener("change", () => {
-      output.value = translateTextALAAY(input.value, keepI.checked);
-    });
+    initTabs();
+    loadStory(0);
   </script>
 </body>
 </html>
