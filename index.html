@@ -1,537 +1,819 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Elefen Lector — Tap to Define</title>
-  <style>
-    :root {
-      --primary: #0284c7;
-      --primary-dark: #0369a1;
-      --bg: #0f172a;
-      --panel: #1e293b;
-      --border: #334155;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --highlight: #38bdf8;
-      --highlight-bg: rgba(56, 189, 248, 0.18);
-    }
+<meta charset="UTF-8">
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+>
+<meta name="theme-color" content="#1976d2">
+<title>Family Crossword</title>
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
+<style>
+:root {
+  --blue: #1976d2;
+  --blue-dark: #0d47a1;
+  --blue-light: #72baff;
+  --yellow: #ffd400;
+  --black: #111111;
+  --page: #f4f5f7;
+  --card: #ffffff;
+  --soft: #eef6ff;
+  --text: #171717;
+  --muted: #666666;
+}
 
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 16px 16px 120px 16px;
-    }
+* {
+  box-sizing: border-box;
+}
 
-    .app-container {
-      width: 100%;
-      max-width: 440px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
+html {
+  background: var(--page);
+  -webkit-text-size-adjust: 100%;
+}
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 6px 2px;
-    }
+body {
+  margin: 0;
+  min-height: 100%;
+  color: var(--text);
+  font-family:
+    ui-rounded,
+    "SF Pro Rounded",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Arial,
+    sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(114,186,255,.65) 0%, transparent 30rem),
+    radial-gradient(circle at bottom right, rgba(255,212,0,.34) 0%, transparent 26rem),
+    var(--page);
+}
 
-    .header-title h1 {
-      font-size: 1.25rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-    }
+main {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  padding: 24px 12px 50px;
+}
 
-    .header-title span {
-      color: var(--highlight);
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
+.hero {
+  margin-bottom: 18px;
+}
 
-    .story-selector {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 4px;
-      scrollbar-width: none;
-    }
+.kicker {
+  color: var(--blue-dark);
+  font-size: .78rem;
+  font-weight: 950;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
 
-    .story-selector::-webkit-scrollbar {
-      display: none;
-    }
+h1 {
+  margin: 4px 0 4px;
+  font-size: clamp(2.4rem, 8vw, 4.7rem);
+  line-height: .95;
+  letter-spacing: -.05em;
+  color: var(--black);
+}
 
-    .story-tab {
-      background-color: var(--panel);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      padding: 8px 14px;
-      border-radius: 999px;
-      font-size: 0.78rem;
-      font-weight: 700;
-      white-space: nowrap;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
+.subtitle {
+  margin: 8px 0 0;
+  max-width: 680px;
+  color: var(--muted);
+  font-weight: 750;
+  line-height: 1.5;
+}
 
-    .story-tab.active {
-      background-color: var(--primary);
-      border-color: var(--highlight);
-      color: #ffffff;
-    }
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 18px;
+  align-items: start;
+}
 
-    .reader-card {
-      background-color: #ffffff;
-      color: #0f172a;
-      border-radius: 24px;
-      padding: 24px 20px;
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
-    }
+.card {
+  padding: 14px;
+  border: 3px solid var(--black);
+  border-radius: 22px;
+  background: white;
+  box-shadow: 0 5px 0 var(--black);
+}
 
-    .story-meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
+.game-card {
+  min-width: 0;
+}
 
-    .story-tag {
-      background-color: #e0f2fe;
-      color: #0369a1;
-      font-size: 0.72rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 4px 10px;
-      border-radius: 6px;
-    }
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
 
-    .story-hint {
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: #64748b;
-    }
+.score {
+  padding: 7px 10px;
+  border: 2px solid var(--black);
+  border-radius: 10px;
+  background: var(--yellow);
+  font-size: .88rem;
+  font-weight: 950;
+}
 
-    .story-title {
-      font-size: 1.4rem;
-      font-weight: 900;
-      line-height: 1.25;
-      margin-bottom: 18px;
-      color: #0b2545;
-    }
+.instructions {
+  color: var(--muted);
+  font-size: .86rem;
+  font-weight: 750;
+}
 
-    .story-content {
-      font-size: 1.15rem;
-      line-height: 1.85;
-      font-family: -apple-system, BlinkMacSystemFont, "Georgia", serif;
-      color: #1e293b;
-    }
+.grid-wrap {
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
 
-    .word {
-      cursor: pointer;
-      padding: 2px 3px;
-      margin: 0 -1px;
-      border-radius: 4px;
-      transition: background-color 0.15s, color 0.15s;
-    }
+#crossword {
+  --cols: 13;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  gap: 2px;
+  width: min(100%, 650px);
+  min-width: 420px;
+  margin: 0 auto;
+  padding: 7px;
+  border: 3px solid var(--black);
+  border-radius: 17px;
+  background: var(--black);
+}
 
-    .word:hover {
-      background-color: #e2e8f0;
-    }
+.cell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  min-width: 0;
+  background: white;
+}
 
-    .word.selected {
-      background-color: #0284c7;
-      color: #ffffff !important;
-      font-weight: 600;
-    }
+.cell.block {
+  background: var(--black);
+}
 
-    .translation-box {
-      margin-top: 24px;
-      border-top: 1px solid #e2e8f0;
-      padding-top: 16px;
-    }
+.cell.correct {
+  background: var(--yellow);
+}
 
-    .translation-toggle {
-      background: none;
-      border: none;
-      color: #0284c7;
-      font-size: 0.85rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+.cell.active {
+  box-shadow: inset 0 0 0 4px var(--blue);
+}
 
-    .translation-text {
-      display: none;
-      font-size: 0.95rem;
-      line-height: 1.6;
-      color: #64748b;
-      margin-top: 10px;
-      font-style: italic;
-    }
+.number {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  z-index: 2;
+  color: var(--black);
+  font-size: clamp(7px, 1.4vw, 10px);
+  font-weight: 950;
+  line-height: 1;
+  pointer-events: none;
+}
 
-    #definition-sheet {
-      position: fixed;
-      bottom: 16px;
-      left: 50%;
-      transform: translateX(-50%) translateY(150%);
-      width: calc(100% - 32px);
-      max-width: 440px;
-      background: #1e293b;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 16px 20px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 100;
-    }
+.cell input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 7px 1px 1px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--black);
+  text-align: center;
+  text-transform: uppercase;
+  font: inherit;
+  font-size: clamp(.86rem, 3vw, 1.45rem);
+  font-weight: 950;
+  caret-color: var(--blue-dark);
+}
 
-    #definition-sheet.visible {
-      transform: translateX(-50%) translateY(0);
-    }
+.cell input:focus {
+  outline: none;
+}
 
-    .sheet-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 6px;
-    }
+.clues-card h2 {
+  margin: 0 0 10px;
+  font-size: 1.3rem;
+}
 
-    .sheet-word {
-      font-size: 1.4rem;
-      font-weight: 900;
-      color: #ffffff;
-    }
+.clue-section + .clue-section {
+  margin-top: 18px;
+}
 
-    .sheet-pos {
-      font-size: 0.7rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      background: rgba(56, 189, 248, 0.15);
-      color: var(--highlight);
-      padding: 3px 8px;
-      border-radius: 6px;
-      margin-left: 8px;
-    }
+.clue-title {
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border: 2px solid var(--black);
+  border-radius: 10px;
+  background: var(--blue-light);
+  font-size: .82rem;
+  font-weight: 950;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
 
-    .sheet-close {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: 1.2rem;
-      cursor: pointer;
-      padding: 0 4px;
-    }
+.clue-list {
+  display: grid;
+  gap: 7px;
+}
 
-    .sheet-def {
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: #f1f5f9;
-      margin-bottom: 4px;
-    }
+.clue {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  border: 2px solid var(--black);
+  border-radius: 11px;
+  background: white;
+  color: var(--black);
+  box-shadow: 0 3px 0 var(--black);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
 
-    .sheet-note {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      font-style: italic;
-    }
-  </style>
+.clue-number {
+  flex: 0 0 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: var(--black);
+  color: white;
+  font-size: .74rem;
+  font-weight: 950;
+}
+
+.clue-text {
+  padding-top: 2px;
+  font-size: .9rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.clue.selected {
+  background: var(--blue-light);
+}
+
+.clue.correct {
+  background: var(--yellow);
+}
+
+.controls {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+button.action {
+  min-height: 48px;
+  padding: 0 16px;
+  border: 3px solid var(--black);
+  border-radius: 13px;
+  background: white;
+  color: var(--black);
+  box-shadow: 0 4px 0 var(--black);
+  font: inherit;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+button.action.primary {
+  background: var(--yellow);
+}
+
+button:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--black);
+}
+
+#message {
+  min-height: 24px;
+  margin-top: 13px;
+  color: var(--muted);
+  font-size: .9rem;
+  font-weight: 850;
+}
+
+#message.good {
+  color: var(--blue-dark);
+}
+
+.win {
+  display: none;
+  margin-top: 13px;
+  padding: 15px;
+  border: 3px solid var(--black);
+  border-radius: 14px;
+  background: var(--yellow);
+  box-shadow: 0 4px 0 var(--black);
+  text-align: center;
+  font-weight: 950;
+}
+
+.win.show {
+  display: block;
+}
+
+@media (max-width: 850px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .clues-card {
+    order: 2;
+  }
+}
+
+@media (max-width: 480px) {
+  main {
+    padding: 16px 8px 40px;
+  }
+
+  .card {
+    padding: 9px;
+    border-radius: 17px;
+  }
+
+  #crossword {
+    min-width: 350px;
+    gap: 1px;
+    padding: 5px;
+  }
+
+  .cell input {
+    font-size: .92rem;
+  }
+}
+</style>
 </head>
+
 <body>
+<main>
 
-  <div class="app-container">
-    <header>
-      <div class="header-title">
-        <h1>Elefen Lector</h1>
-        <span>Tap any word to translate</span>
+  <header class="hero">
+    <div class="kicker">How well do you know the family?</div>
+    <h1>Family Crossword</h1>
+    <p class="subtitle">
+      Tap a clue or a square and type your answers. When an entire answer is correct,
+      that word lights up yellow.
+    </p>
+  </header>
+
+  <section class="layout">
+
+    <div class="card game-card">
+      <div class="status-row">
+        <div id="score" class="score">0 / 13 solved</div>
+        <div class="instructions">Answers ignore spaces.</div>
       </div>
-    </header>
 
-    <div class="story-selector" id="story-tabs"></div>
-
-    <div class="reader-card">
-      <div class="story-meta">
-        <span class="story-tag" id="story-category">CONTO</span>
-        <span class="story-hint">👆 Toce un parola</span>
+      <div class="grid-wrap">
+        <div id="crossword" aria-label="Family crossword puzzle"></div>
       </div>
-      <h2 class="story-title" id="story-title"></h2>
-      <div class="story-content" id="story-body"></div>
 
-      <div class="translation-box">
-        <button class="translation-toggle" id="toggle-translation">
-          <span>📖 Mostra tradui completa</span>
-        </button>
-        <div class="translation-text" id="story-translation"></div>
+      <div class="controls">
+        <button id="clearButton" class="action" type="button">Clear Puzzle</button>
+        <button id="checkButton" class="action primary" type="button">Check Puzzle</button>
       </div>
+
+      <div id="message" aria-live="polite">Pick a clue and start typing.</div>
+      <div id="win" class="win">🎉 FAMILY CROSSWORD COMPLETE! 🎉</div>
     </div>
-  </div>
 
-  <div id="definition-sheet">
-    <div class="sheet-header">
-      <div>
-        <span class="sheet-word" id="def-word">Parola</span>
-        <span class="sheet-pos" id="def-pos">POS</span>
-      </div>
-      <button class="sheet-close" id="close-sheet">✕</button>
-    </div>
-    <div class="sheet-def" id="def-meaning">English translation goes here.</div>
-    <div class="sheet-note" id="def-note">Example note.</div>
-  </div>
+    <aside class="card clues-card">
+      <h2>Clues</h2>
 
-  <script>
-    const DICTIONARY = {
-      "un": { def: "a, an, one", pos: "article" },
-      "viajor": { def: "traveler", pos: "noun" },
-      "joven": { def: "young", pos: "adj" },
-      "ia": { def: "[past tense marker]", pos: "particle", note: "Shows past action: 'ia ariva' = arrived" },
-      "ariva": { def: "to arrive", pos: "verb" },
-      "a": { def: "at, to", pos: "prep" },
-      "la": { def: "the", pos: "article" },
-      "sera": { def: "evening", pos: "noun" },
-      "sol": { def: "sun", pos: "noun" },
-      "reposa": { def: "to rest, set", pos: "verb" },
-      "sur": { def: "on, upon, about", pos: "prep" },
-      "mar": { def: "sea, ocean", pos: "noun" },
-      "briliante": { def: "shining, brilliant", pos: "adj" },
-      "e": { def: "and", pos: "conj" },
-      "aira": { def: "air, breeze", pos: "noun" },
-      "es": { def: "to be (is, are, was)", pos: "verb" },
-      "dulse": { def: "sweet, gentle", pos: "adj" },
-      "calma": { def: "calm, quiet", pos: "adj" },
-      "el": { def: "he, she, it (person)", pos: "pronoun" },
-      "pasea": { def: "to stroll, walk", pos: "verb" },
-      "tra": { def: "through, across", pos: "prep" },
-      "stradas": { def: "streets (plural)", pos: "noun", note: "Root: strada" },
-      "strada": { def: "street, road", pos: "noun" },
-      "de": { def: "of, from", pos: "prep" },
-      "petra": { def: "stone, rock", pos: "noun" },
-      "regardante": { def: "watching, looking at", pos: "participle", note: "regarda + -nte" },
-      "regarda": { def: "to look at, watch", pos: "verb" },
-      "caferias": { def: "cafés, coffee shops (plural)", pos: "noun", note: "Root: caferia" },
-      "caferia": { def: "café, coffee shop", pos: "noun" },
-      "plen": { def: "full", pos: "adj" },
-      "persones": { def: "people, persons", pos: "noun" },
-      "ci": { def: "who, which", pos: "pronoun" },
-      "parla": { def: "to talk, speak", pos: "verb" },
-      "rie": { def: "to laugh", pos: "verb" },
-      "con": { def: "with", pos: "prep" },
-      "joia": { def: "joy, delight", pos: "noun" },
-      "pronto": { def: "soon, quickly", pos: "adv" },
-      "trova": { def: "to find, discover", pos: "verb" },
-      "libreria": { def: "bookstore, library", pos: "noun" },
-      "vea": { def: "old, ancient", pos: "adj" },
-      "sinia": { def: "sign, signal", pos: "noun" },
-      "lenio": { def: "wood", pos: "noun" },
-      "libros": { def: "books (plural)", pos: "noun", note: "Root: libro" },
-      "libro": { def: "book", pos: "noun" },
-      "cuando": { def: "when", pos: "conj" },
-      "entra": { def: "to enter", pos: "verb" },
-      "gato": { def: "cat", pos: "noun" },
-      "gris": { def: "gray", pos: "adj" },
-      "saluta": { def: "to greet, salute", pos: "verb" },
-      "miaui": { def: "to meow", pos: "verb" },
-      "porto": { def: "port, harbor", pos: "noun" },
-      "elefen": { def: "Lingua Franca Nova", pos: "proper noun" },
-      "santos": { def: "Santos (city)", pos: "proper noun" },
-      "autovia": { def: "highway, motorway", pos: "noun" },
-      "entre": { def: "between, among", pos: "prep" },
-      "tempo": { def: "weather, time", pos: "noun" },
-      "bon": { def: "good", pos: "adj" },
-      "dia": { def: "day", pos: "noun" },
-      "doman": { def: "tomorrow", pos: "adv" },
-      "va": { def: "[future tense marker]", pos: "particle", note: "Shows future action: 'va jua' = will play" },
-      "transmeteda": { def: "broadcasted, transmitted", pos: "adj / part" },
-      "par": { def: "by", pos: "prep" },
-      "canal": { def: "channel, canal", pos: "noun" },
-      "lago": { def: "lake", pos: "noun" },
-      "serena": { def: "serene, peaceful", pos: "adj" },
-      "fronti": { def: "to face, confront", pos: "verb" },
-      "sportal": { def: "sporting, athletic", pos: "adj" },
-      "max": { def: "match, game", pos: "noun" },
-      "jua": { def: "to play", pos: "verb" },
-      "contra": { def: "against", pos: "prep" },
-      "aveni": { def: "event, occurrence", pos: "noun" },
-      "tota": { def: "all, whole, entire", pos: "adj / det" },
-      "en": { def: "in, at, inside", pos: "prep" },
-      "site": { def: "city, town", pos: "noun" },
-      "juores": { def: "players (plural)", pos: "noun", note: "Root: juor" },
-      "juor": { def: "player", pos: "noun" },
-      "stadion": { def: "stadium", pos: "noun" },
-      "nova": { def: "new", pos: "adj" }
-    };
+      <section class="clue-section">
+        <div class="clue-title">Across</div>
+        <div id="acrossClues" class="clue-list"></div>
+      </section>
 
-    const STORIES = [
-      {
-        id: "libreria",
-        tab: "La Libreria Vea",
-        category: "CONTO",
-        title: "La Libreria Vea en Porto de Elefen",
-        text: "Un viajor joven ia ariva a Porto de Elefen a la sera. La sol ia reposa sur la mar briliante, e la aira ia es dulse e calma. El ia pasea tra la stradas de petra, regardante la caferias plen de persones ci ia parla e rie con joia. Pronto, el ia trova un libreria vea con un sinia de lenio: Libros de la Mar. Cuando el ia entra, un gato gris ia saluta el e ia miaui dulse.",
-        translation: "A young traveler arrived in Porto de Elefen in the evening. The sun was resting on the shining sea, and the air was sweet and calm. He strolled through the stone streets, watching the cafés full of people who were talking and laughing with joy. Soon, he found an old bookstore with a wooden sign: 'Books of the Sea'. When he entered, a gray cat greeted him and meowed gently."
-      },
-      {
-        id: "max",
-        tab: "La Max Grande",
-        category: "SPORTE",
-        title: "La Max entre Porto e Lago Serena",
-        text: "Porto de Elefen va jua contra Lago Serena doman a la sera. La aveni va es transmeteda par Canal 26 Elefen. Tota la persones en la site parla con joia sur la juores e la stadion nova.",
-        translation: "Porto de Elefen will play against Lago Serena tomorrow in the evening. The event will be broadcasted by Canal 26 Elefen. All the people in the city are talking with joy about the players and the new stadium."
+      <section class="clue-section">
+        <div class="clue-title">Down</div>
+        <div id="downClues" class="clue-list"></div>
+      </section>
+    </aside>
+
+  </section>
+
+</main>
+
+<script>
+(() => {
+  const ROWS = 16;
+  const COLS = 13;
+
+  const ENTRIES = [{"id": "1", "number": 1, "direction": "down", "answer": "KAWASAKI", "clue": "Manufacturer of Joey's bike", "row": 3, "col": 3}, {"id": "3", "number": 3, "direction": "down", "answer": "VUKSTA", "clue": "Mimi's maiden last name", "row": 5, "col": 0}, {"id": "5", "number": 5, "direction": "down", "answer": "ADAM", "clue": "Should have been born in Brazil", "row": 12, "col": 8}, {"id": "7", "number": 7, "direction": "down", "answer": "ADDIE", "clue": "Loves Bluey", "row": 0, "col": 8}, {"id": "9", "number": 9, "direction": "down", "answer": "EMMETT", "clue": "Throws a mean spiral", "row": 1, "col": 6}, {"id": "11", "number": 11, "direction": "down", "answer": "JOEY", "clue": "Tallest", "row": 9, "col": 5}, {"id": "13", "number": 13, "direction": "down", "answer": "BUFORD", "clue": "Where we moved to in 1999", "row": 6, "col": 9}, {"id": "2", "number": 2, "direction": "across", "answer": "ALYSSA", "clue": "The oldest kid", "row": 12, "col": 3}, {"id": "4", "number": 4, "direction": "across", "answer": "ALLISONPARK", "clue": "City name in Pittsburgh", "row": 10, "col": 0}, {"id": "6", "number": 6, "direction": "across", "answer": "CINCINNATI", "clue": "Where Joey and I were born", "row": 14, "col": 1}, {"id": "8", "number": 8, "direction": "across", "answer": "LAUREN", "clue": "Loves animals", "row": 0, "col": 7}, {"id": "10", "number": 10, "direction": "across", "answer": "MAPLELEAF", "clue": "Street name in Cincinnati", "row": 4, "col": 2}, {"id": "12", "number": 12, "direction": "across", "answer": "BLUE", "clue": "Addie and Emmett's eyes", "row": 1, "col": 3}];
+
+  const crossword = document.getElementById("crossword");
+  const acrossClues = document.getElementById("acrossClues");
+  const downClues = document.getElementById("downClues");
+  const score = document.getElementById("score");
+  const message = document.getElementById("message");
+  const win = document.getElementById("win");
+  const clearButton = document.getElementById("clearButton");
+  const checkButton = document.getElementById("checkButton");
+
+  const cellMap = new Map();
+  const inputMap = new Map();
+  const entryCells = new Map();
+  const cellEntries = new Map();
+  const clueButtons = new Map();
+
+  let activeEntryId = null;
+
+  function key(row, col) {
+    return row + "," + col;
+  }
+
+  function buildPuzzleData() {
+    for (const entry of ENTRIES) {
+      const cells = [];
+      const rowStep = entry.direction === "down" ? 1 : 0;
+      const colStep = entry.direction === "across" ? 1 : 0;
+
+      for (let i = 0; i < entry.answer.length; i++) {
+        const row = entry.row + rowStep * i;
+        const col = entry.col + colStep * i;
+        const cellKey = key(row, col);
+
+        cells.push(cellKey);
+
+        if (!cellEntries.has(cellKey)) {
+          cellEntries.set(cellKey, []);
+        }
+
+        cellEntries.get(cellKey).push(entry.id);
       }
-    ];
 
-    let currentStoryIndex = 0;
-    let selectedWordSpan = null;
+      entryCells.set(entry.id, cells);
+    }
+  }
 
-    const storyTabsContainer = document.getElementById('story-tabs');
-    const storyCategory = document.getElementById('story-category');
-    const storyTitle = document.getElementById('story-title');
-    const storyBody = document.getElementById('story-body');
-    const storyTranslation = document.getElementById('story-translation');
-    const toggleTranslationBtn = document.getElementById('toggle-translation');
+  function startNumbers() {
+    const numbers = new Map();
 
-    const defSheet = document.getElementById('definition-sheet');
-    const defWord = document.getElementById('def-word');
-    const defPos = document.getElementById('def-pos');
-    const defMeaning = document.getElementById('def-meaning');
-    const defNote = document.getElementById('def-note');
-    const closeSheetBtn = document.getElementById('close-sheet');
+    for (const entry of ENTRIES) {
+      const cellKey = key(entry.row, entry.col);
 
-    function initTabs() {
-      storyTabsContainer.innerHTML = '';
-      STORIES.forEach((story, idx) => {
-        const btn = document.createElement('button');
-        btn.className = `story-tab ${idx === currentStoryIndex ? 'active' : ''}`;
-        btn.textContent = story.tab;
-        btn.addEventListener('click', () => loadStory(idx));
-        storyTabsContainer.appendChild(btn);
-      });
+      if (!numbers.has(cellKey)) {
+        numbers.set(cellKey, []);
+      }
+
+      numbers.get(cellKey).push(entry.number);
     }
 
-    function renderInteractiveText(text) {
-      const tokens = text.split(/([a-zA-ZÀ-ÿ0-9_]+)/);
-      const frag = document.createDocumentFragment();
+    return numbers;
+  }
 
-      tokens.forEach(token => {
-        if (/^[a-zA-ZÀ-ÿ0-9_]+$/.test(token)) {
-          const span = document.createElement('span');
-          span.className = 'word';
-          span.textContent = token;
-          span.setAttribute('data-clean', token.toLowerCase());
-          span.addEventListener('click', (e) => handleWordClick(e, span, token));
-          frag.appendChild(span);
-        } else {
-          frag.appendChild(document.createTextNode(token));
+  function renderGrid() {
+    crossword.innerHTML = "";
+    const numbers = startNumbers();
+
+    for (let row = 0; row < ROWS; row++) {
+      for (let col = 0; col < COLS; col++) {
+        const cellKey = key(row, col);
+        const holder = document.createElement("div");
+        holder.className = "cell";
+        holder.dataset.key = cellKey;
+
+        if (!cellEntries.has(cellKey)) {
+          holder.classList.add("block");
+          crossword.appendChild(holder);
+          continue;
+        }
+
+        if (numbers.has(cellKey)) {
+          const number = document.createElement("span");
+          number.className = "number";
+          number.textContent = numbers.get(cellKey).join("/");
+          holder.appendChild(number);
+        }
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.inputMode = "text";
+        input.autocomplete = "off";
+        input.autocapitalize = "characters";
+        input.spellcheck = false;
+        input.maxLength = 1;
+        input.setAttribute("aria-label", "Crossword square");
+
+        input.addEventListener("focus", () => {
+          chooseEntryForCell(cellKey);
+          paintActiveEntry();
+        });
+
+        input.addEventListener("click", () => {
+          chooseEntryForCell(cellKey, true);
+          paintActiveEntry();
+        });
+
+        input.addEventListener("input", event => {
+          const clean = event.target.value
+            .toUpperCase()
+            .replace(/[^A-Z]/g, "")
+            .slice(-1);
+
+          event.target.value = clean;
+          updateCorrectness();
+
+          if (clean) {
+            moveWithinActiveEntry(cellKey, 1);
+          }
+        });
+
+        input.addEventListener("keydown", event => {
+          if (event.key === "Backspace" && input.value === "") {
+            event.preventDefault();
+            moveWithinActiveEntry(cellKey, -1, true);
+            return;
+          }
+
+          if (event.key === "ArrowRight") {
+            event.preventDefault();
+            movePhysical(row, col + 1);
+          }
+          else if (event.key === "ArrowLeft") {
+            event.preventDefault();
+            movePhysical(row, col - 1);
+          }
+          else if (event.key === "ArrowDown") {
+            event.preventDefault();
+            movePhysical(row + 1, col);
+          }
+          else if (event.key === "ArrowUp") {
+            event.preventDefault();
+            movePhysical(row - 1, col);
+          }
+        });
+
+        holder.appendChild(input);
+        crossword.appendChild(holder);
+
+        cellMap.set(cellKey, holder);
+        inputMap.set(cellKey, input);
+      }
+    }
+  }
+
+  function renderClues() {
+    acrossClues.innerHTML = "";
+    downClues.innerHTML = "";
+
+    const across = ENTRIES
+      .filter(entry => entry.direction === "across")
+      .sort((a, b) => a.number - b.number);
+
+    const down = ENTRIES
+      .filter(entry => entry.direction === "down")
+      .sort((a, b) => a.number - b.number);
+
+    for (const entry of [...across, ...down]) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "clue";
+      button.dataset.entryId = entry.id;
+
+      button.innerHTML =
+        '<span class="clue-number">' + entry.number + '</span>' +
+        '<span class="clue-text">' + escapeHTML(entry.clue) + '</span>';
+
+      button.addEventListener("click", () => {
+        activeEntryId = entry.id;
+        paintActiveEntry();
+
+        const firstCell = entryCells.get(entry.id)[0];
+        const input = inputMap.get(firstCell);
+
+        if (input) {
+          input.focus();
         }
       });
 
-      return frag;
-    }
+      clueButtons.set(entry.id, button);
 
-    function loadStory(idx) {
-      currentStoryIndex = idx;
-      const story = STORIES[idx];
-
-      document.querySelectorAll('.story-tab').forEach((tab, i) => {
-        tab.classList.toggle('active', i === idx);
-      });
-
-      storyCategory.textContent = story.category;
-      storyTitle.textContent = story.title;
-      storyBody.innerHTML = '';
-      storyBody.appendChild(renderInteractiveText(story.text));
-      storyTranslation.textContent = story.translation;
-      storyTranslation.style.display = 'none';
-      toggleTranslationBtn.querySelector('span').textContent = '📖 Mostra tradui completa';
-
-      hideDefinition();
-    }
-
-    function handleWordClick(e, span, rawWord) {
-      if (selectedWordSpan) {
-        selectedWordSpan.classList.remove('selected');
+      if (entry.direction === "across") {
+        acrossClues.appendChild(button);
       }
+      else {
+        downClues.appendChild(button);
+      }
+    }
+  }
 
-      selectedWordSpan = span;
-      selectedWordSpan.classList.add('selected');
+  function escapeHTML(text) {
+    return text
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
 
-      const cleanWord = rawWord.toLowerCase();
-      lookupWord(cleanWord, rawWord);
+  function chooseEntryForCell(cellKey, toggle = false) {
+    const ids = cellEntries.get(cellKey) || [];
+
+    if (ids.length === 0) {
+      return;
     }
 
-    function lookupWord(clean, original) {
-      let entry = DICTIONARY[clean];
+    if (ids.length === 1) {
+      activeEntryId = ids[0];
+      return;
+    }
 
-      if (!entry && clean.endsWith('s')) {
-        const singular = clean.slice(0, -1);
-        if (DICTIONARY[singular]) {
-          entry = {
-            ...DICTIONARY[singular],
-            def: DICTIONARY[singular].def + " (plural)",
-            note: "Plural form of '" + singular + "'"
-          };
+    if (activeEntryId && ids.includes(activeEntryId) && !toggle) {
+      return;
+    }
+
+    if (toggle && activeEntryId && ids.includes(activeEntryId)) {
+      const index = ids.indexOf(activeEntryId);
+      activeEntryId = ids[(index + 1) % ids.length];
+      return;
+    }
+
+    activeEntryId = ids[0];
+  }
+
+  function paintActiveEntry() {
+    document
+      .querySelectorAll(".cell.active")
+      .forEach(cell => cell.classList.remove("active"));
+
+    document
+      .querySelectorAll(".clue.selected")
+      .forEach(clue => clue.classList.remove("selected"));
+
+    if (!activeEntryId) {
+      return;
+    }
+
+    const cells = entryCells.get(activeEntryId) || [];
+
+    for (const cellKey of cells) {
+      const cell = cellMap.get(cellKey);
+      if (cell) {
+        cell.classList.add("active");
+      }
+    }
+
+    const clue = clueButtons.get(activeEntryId);
+    if (clue) {
+      clue.classList.add("selected");
+    }
+  }
+
+  function moveWithinActiveEntry(currentCellKey, amount, deletePrevious = false) {
+    if (!activeEntryId) {
+      return;
+    }
+
+    const cells = entryCells.get(activeEntryId) || [];
+    const index = cells.indexOf(currentCellKey);
+
+    if (index === -1) {
+      return;
+    }
+
+    const nextIndex = index + amount;
+
+    if (nextIndex < 0 || nextIndex >= cells.length) {
+      return;
+    }
+
+    const nextInput = inputMap.get(cells[nextIndex]);
+
+    if (nextInput) {
+      nextInput.focus();
+
+      if (deletePrevious) {
+        nextInput.value = "";
+        updateCorrectness();
+      }
+    }
+  }
+
+  function movePhysical(row, col) {
+    if (row < 0 || row >= ROWS || col < 0 || col >= COLS) {
+      return;
+    }
+
+    const input = inputMap.get(key(row, col));
+    if (input) {
+      input.focus();
+    }
+  }
+
+  function entryIsCorrect(entry) {
+    const cells = entryCells.get(entry.id);
+
+    if (!cells) {
+      return false;
+    }
+
+    const typed = cells
+      .map(cellKey => {
+        const input = inputMap.get(cellKey);
+        return input ? input.value.toUpperCase() : "";
+      })
+      .join("");
+
+    return typed === entry.answer;
+  }
+
+  function updateCorrectness(showCheckMessage = false) {
+    const correctEntries = new Set(
+      ENTRIES
+        .filter(entry => entryIsCorrect(entry))
+        .map(entry => entry.id)
+    );
+
+    for (const [cellKey, cell] of cellMap.entries()) {
+      const ids = cellEntries.get(cellKey) || [];
+      const belongsToCorrectWord = ids.some(id => correctEntries.has(id));
+      cell.classList.toggle("correct", belongsToCorrectWord);
+    }
+
+    for (const entry of ENTRIES) {
+      const clue = clueButtons.get(entry.id);
+      if (clue) {
+        clue.classList.toggle("correct", correctEntries.has(entry.id));
+      }
+    }
+
+    const solved = correctEntries.size;
+    score.textContent =
+      solved + " / " + ENTRIES.length +
+      (ENTRIES.length === 1 ? " solved" : " solved");
+
+    if (solved === ENTRIES.length) {
+      win.classList.add("show");
+      message.textContent = "You got every answer. Nice work. 🔥";
+      message.className = "good";
+    }
+    else {
+      win.classList.remove("show");
+
+      if (showCheckMessage) {
+        if (solved === 0) {
+          message.textContent = "Nothing complete yet. Keep going.";
         }
-      }
+        else {
+          message.textContent =
+            solved + " answer" +
+            (solved === 1 ? " is" : "s are") +
+            " correct so far.";
+        }
 
-      defWord.textContent = original;
-
-      if (entry) {
-        defPos.textContent = entry.pos || 'VOCAB';
-        defPos.style.display = 'inline-block';
-        defMeaning.textContent = entry.def;
-        defNote.textContent = entry.note || '';
-        defNote.style.display = entry.note ? 'block' : 'none';
-      } else {
-        defPos.style.display = 'none';
-        defMeaning.textContent = 'Definition not in quick dictionary.';
-        defNote.textContent = 'Tap another word or add this to your dictionary list.';
-        defNote.style.display = 'block';
-      }
-
-      defSheet.classList.add('visible');
-    }
-
-    function hideDefinition() {
-      defSheet.classList.remove('visible');
-      if (selectedWordSpan) {
-        selectedWordSpan.classList.remove('selected');
-        selectedWordSpan = null;
+        message.className = solved > 0 ? "good" : "";
       }
     }
+  }
 
-    closeSheetBtn.addEventListener('click', hideDefinition);
+  clearButton.addEventListener("click", () => {
+    for (const input of inputMap.values()) {
+      input.value = "";
+    }
 
-    toggleTranslationBtn.addEventListener('click', () => {
-      const isHidden = storyTranslation.style.display === 'none';
-      storyTranslation.style.display = isHidden ? 'block' : 'none';
-      toggleTranslationBtn.querySelector('span').textContent = isHidden ? '✕ Asconde tradui' : '📖 Mostra tradui completa';
-    });
+    activeEntryId = null;
+    paintActiveEntry();
+    updateCorrectness();
 
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('.word') && !e.target.closest('#definition-sheet')) {
-        hideDefinition();
-      }
-    });
+    message.textContent = "Puzzle cleared. Start again.";
+    message.className = "";
 
-    initTabs();
-    loadStory(0);
-  </script>
+    const firstEntry = ENTRIES.find(entry => entry.number === 1) || ENTRIES[0];
+    const firstInput = inputMap.get(entryCells.get(firstEntry.id)[0]);
+
+    if (firstInput) {
+      firstInput.focus();
+    }
+  });
+
+  checkButton.addEventListener("click", () => {
+    updateCorrectness(true);
+  });
+
+  buildPuzzleData();
+  renderGrid();
+  renderClues();
+  updateCorrectness();
+})();
+</script>
+
 </body>
 </html>
